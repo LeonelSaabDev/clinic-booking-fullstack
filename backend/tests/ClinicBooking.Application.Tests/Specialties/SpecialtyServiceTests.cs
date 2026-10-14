@@ -84,6 +84,18 @@ public class SpecialtyServiceTests
     }
 
     [Fact]
+    public async Task RenameAsync_WithNameOfAnotherSpecialtyAndExtraSpaces_ThrowsConflictException()
+    {
+        var cardiology = Specialty.Create("Cardiology");
+        _repository.Saved.Add(cardiology);
+        _repository.Saved.Add(Specialty.Create("Pediatrics"));
+        var request = new RenameSpecialtyRequest("  Pediatrics  ");
+
+        await Assert.ThrowsAsync<ConflictException>(
+            () => _service.RenameAsync(cardiology.Id, request, CancellationToken.None));
+    }
+
+    [Fact]
     public async Task RenameAsync_WithSameNameDifferentCase_UpdatesName()
     {
         var cardiology = Specialty.Create("Cardiology");
