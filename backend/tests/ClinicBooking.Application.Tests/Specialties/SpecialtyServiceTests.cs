@@ -46,4 +46,53 @@ public class SpecialtyServiceTests
         await Assert.ThrowsAsync<ConflictException>(
             () => _service.CreateAsync(request, CancellationToken.None));
     }
+
+    [Fact]
+    public async Task RenameAsync_WithNewUniqueName_UpdatesAndReturnsSpecialty()
+    {
+        var specialty = Specialty.Create("Cardiology");
+        _repository.Saved.Add(specialty);
+        var request = new RenameSpecialtyRequest("Pediatrics");
+
+        var response = await _service.RenameAsync(specialty.Id, request, CancellationToken.None);
+
+        Assert.NotNull(response);
+        Assert.Equal("Pediatrics", response.Name);
+        Assert.Equal("Pediatrics", specialty.Name);
+    }
+
+    [Fact]
+    public async Task RenameAsync_WhenSpecialtyDoesNotExist_ReturnsNull()
+    {
+        var request = new RenameSpecialtyRequest("Pediatrics");
+
+        var response = await _service.RenameAsync(Guid.NewGuid(), request, CancellationToken.None);
+
+        Assert.Null(response);
+    }
+
+    [Fact]
+    public async Task RenameAsync_WithNameOfAnotherSpecialty_ThrowsConflictException()
+    {
+        var cardiology = Specialty.Create("Cardiology");
+        _repository.Saved.Add(cardiology);
+        _repository.Saved.Add(Specialty.Create("Pediatrics"));
+        var request = new RenameSpecialtyRequest("Pediatrics");
+
+        await Assert.ThrowsAsync<ConflictException>(
+            () => _service.RenameAsync(cardiology.Id, request, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task RenameAsync_WithSameNameDifferentCase_UpdatesName()
+    {
+        var cardiology = Specialty.Create("Cardiology");
+        _repository.Saved.Add(cardiology);
+        var request = new RenameSpecialtyRequest("cardiology");
+
+        var response = await _service.RenameAsync(cardiology.Id, request, CancellationToken.None);
+
+        Assert.NotNull(response);
+        Assert.Equal("cardiology", response.Name);
+    }
 }

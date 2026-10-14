@@ -17,4 +17,20 @@ public sealed class SpecialtyService(ISpecialtyRepository repository)
 
         return SpecialtyResponse.FromEntity(specialty);
     }
+
+    public async Task<SpecialtyResponse?> RenameAsync(Guid id, RenameSpecialtyRequest request, CancellationToken cancellationToken)
+    {
+        var specialty = await repository.GetByIdAsync(id, cancellationToken);
+        if (specialty is null)
+            return null;
+
+        specialty.Rename(request.Name);
+
+        if (await repository.ExistsByNameAsync(specialty.Name, excludedId: specialty.Id, cancellationToken))
+            throw new ConflictException($"A specialty named '{specialty.Name}' already exists.");
+
+        await repository.SaveChangesAsync(cancellationToken);
+
+        return SpecialtyResponse.FromEntity(specialty);
+    }
 }
