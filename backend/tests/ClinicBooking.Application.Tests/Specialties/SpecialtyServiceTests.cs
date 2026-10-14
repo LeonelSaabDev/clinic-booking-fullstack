@@ -107,4 +107,58 @@ public class SpecialtyServiceTests
         Assert.NotNull(response);
         Assert.Equal("cardiology", response.Name);
     }
+
+    [Fact]
+    public async Task GetAllAsync_ReturnsAllSpecialties()
+    {
+        _repository.Saved.Add(Specialty.Create("Cardiology"));
+        _repository.Saved.Add(Specialty.Create("Pediatrics"));
+
+        var response = await _service.GetAllAsync(CancellationToken.None);
+
+        Assert.Equal(2, response.Count);
+        Assert.Contains(response, s => s.Name == "Cardiology");
+        Assert.Contains(response, s => s.Name == "Pediatrics");
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_WhenSpecialtyExists_ReturnsSpecialty()
+    {
+        var cardiology = Specialty.Create("Cardiology");
+        _repository.Saved.Add(cardiology);
+
+        var response = await _service.GetByIdAsync(cardiology.Id, CancellationToken.None);
+
+        Assert.NotNull(response);
+        Assert.Equal(cardiology.Id, response.Id);
+        Assert.Equal("Cardiology", response.Name);
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_WhenSpecialtyDoesNotExist_ReturnsNull()
+    {
+        var response = await _service.GetByIdAsync(Guid.NewGuid(), CancellationToken.None);
+
+        Assert.Null(response);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenSpecialtyExists_RemovesItAndReturnsTrue()
+    {
+        var cardiology = Specialty.Create("Cardiology");
+        _repository.Saved.Add(cardiology);
+
+        var deleted = await _service.DeleteAsync(cardiology.Id, CancellationToken.None);
+
+        Assert.True(deleted);
+        Assert.Empty(_repository.Saved);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenSpecialtyDoesNotExist_ReturnsFalse()
+    {
+        var deleted = await _service.DeleteAsync(Guid.NewGuid(), CancellationToken.None);
+
+        Assert.False(deleted);
+    }
 }
