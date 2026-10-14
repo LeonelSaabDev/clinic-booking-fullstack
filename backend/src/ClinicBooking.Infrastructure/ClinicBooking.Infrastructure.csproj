@@ -4,6 +4,12 @@
     <ProjectReference Include="..\ClinicBooking.Application\ClinicBooking.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.13" />
+	  <!-- Pinned: Microsoft.Data.SqlClient pulls a vulnerable Pkcs version (CVE-2026-70162, CVE-2026-84008). Remove once SqlClient references >= 9.0.21. -->
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
