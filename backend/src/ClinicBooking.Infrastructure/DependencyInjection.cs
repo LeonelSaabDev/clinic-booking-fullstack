@@ -1,4 +1,5 @@
-﻿using ClinicBooking.Application.Specialties;
+﻿using ClinicBooking.Application.HealthInsurances;
+using ClinicBooking.Application.Specialties;
 using ClinicBooking.Infrastructure.Persistence;
 using ClinicBooking.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,9 @@ public static class DependencyInjection
             ?? throw new InvalidOperationException("Connection string 'ClinicBookingDb' was not found.");
 
         services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
+
         services.AddScoped<ISpecialtyRepository, SpecialtyRepository>();
+        services.AddScoped<IHealthInsuranceRepository, HealthInsuranceRepository>();
 
         return services;
     }

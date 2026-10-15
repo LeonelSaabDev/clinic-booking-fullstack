@@ -22,6 +22,24 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("ClinicBooking.Domain.HealthInsurances.HealthInsurance", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("HealthInsurances");
+                });
+
             modelBuilder.Entity("ClinicBooking.Domain.Specialties.Specialty", b =>
                 {
                     b.Property<Guid>("Id")
