@@ -27,6 +27,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapSpecialtyEndpoints();
+app.MapHealthInsuranceEndpoints();
 
 app.Run();
 
