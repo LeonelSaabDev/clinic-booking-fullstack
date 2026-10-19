@@ -5,9 +5,8 @@
 } @else if (specialties.error()) {
   <p>The specialties could not be loaded.</p>
 } @else {
-  <ul>
-    @for (specialty of specialties.value(); track specialty.id) {
-      <li>{{ specialty.name }}</li>
-    }
-  </ul>
+  <app-specialty-table
+    [specialties]="specialties.value() ?? []"
+    (delete)="deleteSpecialty($event)"
+  />
 }

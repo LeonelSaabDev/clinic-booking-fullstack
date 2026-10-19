@@ -1,0 +1,23 @@
+@if (specialties().length === 0) {
+  <p>No specialties yet.</p>
+} @else {
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th><span class="visually-hidden">Actions</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (specialty of specialties(); track specialty.id) {
+        <tr>
+          <td>{{ specialty.name }}</td>
+          <td>
+            <button type="button" (click)="rename.emit(specialty)">Rename</button>
+            <button type="button" (click)="delete.emit(specialty)">Delete</button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}
