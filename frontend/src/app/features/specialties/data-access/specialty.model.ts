@@ -1,4 +1,4 @@
-export const SPECIALTY_NAME_MAX_LENGHT = 100;
+export const SPECIALTY_NAME_MAX_LENGTH = 100;
 
 export interface Specialty {
   id: string;

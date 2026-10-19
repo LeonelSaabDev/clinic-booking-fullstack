@@ -9,4 +9,19 @@ export const routes: Routes = [
         (m) => m.SpecialtyListPage,
       ),
   },
+  {
+    path: "specialties/new",
+    loadComponent: () =>
+      import("./features/specialties/pages/specialty-form-page/specialty-form-page").then(
+        (m) => m.SpecialtyFormPage,
+      ),
+  },
+  {
+    path: "specialties/:id/edit",
+    loadComponent: () =>
+      import("./features/specialties/pages/specialty-form-page/specialty-form-page").then(
+        (m) => m.SpecialtyFormPage,
+      ),
+  },
+  { path: "**", redirectTo: "specialties" },
 ];
