@@ -23,5 +23,26 @@ export const routes: Routes = [
         (m) => m.SpecialtyFormPage,
       ),
   },
+  {
+    path: "health-insurances",
+    loadComponent: () =>
+      import("./features/health-insurances/pages/health-insurance-list-page/health-insurance-list-page").then(
+        (m) => m.HealthInsuranceListPage,
+      ),
+  },
+  {
+    path: "health-insurances/new",
+    loadComponent: () =>
+      import("./features/health-insurances/pages/health-insurance-form-page/health-insurance-form-page").then(
+        (m) => m.HealthInsuranceFormPage,
+      ),
+  },
+  {
+    path: "health-insurances/:id/edit",
+    loadComponent: () =>
+      import("./features/health-insurances/pages/health-insurance-form-page/health-insurance-form-page").then(
+        (m) => m.HealthInsuranceFormPage,
+      ),
+  },
   { path: "**", redirectTo: "specialties" },
 ];
