@@ -42,13 +42,25 @@ The front desk manages specialties, health insurances, doctors with weekly sched
    dotnet ef database update --project backend/src/ClinicBooking.Infrastructure --startup-project backend/src/ClinicBooking.Api
    ```
 
-2. **Start the API** (from the repository root):
+2. **Set the JWT signing key.** It signs every access token, so it never lives in the repository. For development, store it in [User Secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets) (any long random value works):
+
+   ```bash
+   dotnet user-secrets set "Jwt:SigningKey" "<at least 32 random characters>" --project backend/src/ClinicBooking.Api
+   ```
+
+3. **Create the first receptionist.** Only a receptionist can create other accounts, so the first one comes from a command:
+
+   ```bash
+   dotnet run --project backend/src/ClinicBooking.Api -- create-receptionist <email> <password>
+   ```
+
+4. **Start the API** (from the repository root):
 
    ```bash
    dotnet run --project backend/src/ClinicBooking.Api --launch-profile http
    ```
 
-3. **Start the frontend** (in a second terminal):
+5. **Start the frontend** (in a second terminal):
 
    ```bash
    cd frontend

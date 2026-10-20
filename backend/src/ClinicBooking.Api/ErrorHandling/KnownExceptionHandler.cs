@@ -16,6 +16,7 @@ internal sealed class KnownExceptionHandler(IProblemDetailsService problemDetail
             InvalidReferenceException => (StatusCodes.Status400BadRequest, "Invalid reference"),
             RequestValidationException => (StatusCodes.Status400BadRequest, "Validation error"),
             ConflictException => (StatusCodes.Status409Conflict, "Conflict"),
+            AuthenticationFailedException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
             _ => null
         };
 

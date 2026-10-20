@@ -1,3 +1,4 @@
+﻿using ClinicBooking.Api.Auth;
 using ClinicBooking.Application.Patients;
 using Microsoft.AspNetCore.Http.HttpResults;
 
@@ -7,13 +8,13 @@ public static class PatientEndpoints
 {
     public static IEndpointRouteBuilder MapPatientEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/patients").WithTags("Patients");
+        var group = app.MapGroup("/api/patients").WithTags("Patients").RequireAuthorization(Policies.Staff);
 
         group.MapGet("/", SearchPatients);
         group.MapGet("/{id:guid}", GetPatientById).WithName(nameof(GetPatientById));
-        group.MapPost("/", CreatePatient);
-        group.MapPut("/{id:guid}", UpdatePatient);
-        group.MapDelete("/{id:guid}", DeletePatient);
+        group.MapPost("/", CreatePatient).RequireAuthorization(Policies.Receptionist);
+        group.MapPut("/{id:guid}", UpdatePatient).RequireAuthorization(Policies.Receptionist);
+        group.MapDelete("/{id:guid}", DeletePatient).RequireAuthorization(Policies.Receptionist);
 
         return app;
     }

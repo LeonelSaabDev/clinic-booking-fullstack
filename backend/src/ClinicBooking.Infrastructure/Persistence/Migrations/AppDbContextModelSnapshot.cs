@@ -184,6 +184,41 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                     b.ToTable("Specialties");
                 });
 
+            modelBuilder.Entity("ClinicBooking.Domain.Users.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("DoctorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("nvarchar(254)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DoctorId")
+                        .IsUnique()
+                        .HasFilter("[DoctorId] IS NOT NULL");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.ToTable("Users");
+                });
+
             modelBuilder.Entity("ClinicBooking.Domain.Appointments.Appointment", b =>
                 {
                     b.HasOne("ClinicBooking.Domain.Doctors.Doctor", null)
@@ -264,6 +299,14 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                     b.HasOne("ClinicBooking.Domain.HealthInsurances.HealthInsurance", null)
                         .WithMany()
                         .HasForeignKey("HealthInsuranceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("ClinicBooking.Domain.Users.User", b =>
+                {
+                    b.HasOne("ClinicBooking.Domain.Doctors.Doctor", null)
+                        .WithMany()
+                        .HasForeignKey("DoctorId")
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 #pragma warning restore 612, 618

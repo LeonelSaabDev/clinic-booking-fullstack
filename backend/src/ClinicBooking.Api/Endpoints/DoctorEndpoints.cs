@@ -1,3 +1,4 @@
+﻿using ClinicBooking.Api.Auth;
 using ClinicBooking.Application.Availability;
 using ClinicBooking.Application.Doctors;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -8,16 +9,16 @@ public static class DoctorEndpoints
 {
     public static IEndpointRouteBuilder MapDoctorEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/doctors").WithTags("Doctors");
+        var group = app.MapGroup("/api/doctors").WithTags("Doctors").RequireAuthorization(Policies.Staff);
 
         group.MapGet("/", GetAllDoctors);
         group.MapGet("/{id:guid}", GetDoctorById).WithName(nameof(GetDoctorById));
-        group.MapPost("/", CreateDoctor);
-        group.MapPut("/{id:guid}", UpdateDoctor);
-        group.MapDelete("/{id:guid}", DeleteDoctor);
+        group.MapPost("/", CreateDoctor).RequireAuthorization(Policies.Receptionist);
+        group.MapPut("/{id:guid}", UpdateDoctor).RequireAuthorization(Policies.Receptionist);
+        group.MapDelete("/{id:guid}", DeleteDoctor).RequireAuthorization(Policies.Receptionist);
 
         group.MapGet("/{id:guid}/schedule", GetDoctorSchedule);
-        group.MapPut("/{id:guid}/schedule", UpdateDoctorSchedule);
+        group.MapPut("/{id:guid}/schedule", UpdateDoctorSchedule).RequireAuthorization(Policies.Receptionist);
         group.MapGet("/{id:guid}/availability", GetDoctorAvailability);
 
         return app;

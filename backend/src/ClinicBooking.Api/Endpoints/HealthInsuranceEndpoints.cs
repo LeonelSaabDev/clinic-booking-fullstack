@@ -1,4 +1,5 @@
-﻿using ClinicBooking.Application.HealthInsurances;
+﻿using ClinicBooking.Api.Auth;
+using ClinicBooking.Application.HealthInsurances;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace ClinicBooking.Api.Endpoints;
@@ -7,13 +8,13 @@ public static class HealthInsuranceEndpoints
 {
     public static IEndpointRouteBuilder MapHealthInsuranceEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/health-insurances").WithTags("Health Insurances");
+        var group = app.MapGroup("/api/health-insurances").WithTags("Health Insurances").RequireAuthorization(Policies.Staff);
 
         group.MapGet("/", GetAllHealthInsurances);
         group.MapGet("/{id:guid}", GetHealthInsuranceById).WithName(nameof(GetHealthInsuranceById));
-        group.MapPost("/", CreateHealthInsurance);
-        group.MapPut("/{id:guid}", RenameHealthInsurance);
-        group.MapDelete("/{id:guid}", DeleteHealthInsurance);
+        group.MapPost("/", CreateHealthInsurance).RequireAuthorization(Policies.Receptionist);
+        group.MapPut("/{id:guid}", RenameHealthInsurance).RequireAuthorization(Policies.Receptionist);
+        group.MapDelete("/{id:guid}", DeleteHealthInsurance).RequireAuthorization(Policies.Receptionist);
 
         return app;
     }

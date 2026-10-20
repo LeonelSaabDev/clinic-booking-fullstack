@@ -1,4 +1,5 @@
-﻿using ClinicBooking.Application.Specialties;
+﻿using ClinicBooking.Api.Auth;
+using ClinicBooking.Application.Specialties;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace ClinicBooking.Api.Endpoints;
@@ -7,13 +8,13 @@ public static class SpecialtyEndpoints
 {
     public static IEndpointRouteBuilder MapSpecialtyEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/specialties").WithTags("Specialties");
+        var group = app.MapGroup("/api/specialties").WithTags("Specialties").RequireAuthorization(Policies.Staff);
 
         group.MapGet("/", GetAllSpecialties);
         group.MapGet("/{id:guid}", GetSpecialtyById).WithName(nameof(GetSpecialtyById));
-        group.MapPost("/", CreateSpecialty);
-        group.MapPut("/{id:guid}", RenameSpecialty);
-        group.MapDelete("/{id:guid}", DeleteSpecialty);
+        group.MapPost("/", CreateSpecialty).RequireAuthorization(Policies.Receptionist);
+        group.MapPut("/{id:guid}", RenameSpecialty).RequireAuthorization(Policies.Receptionist);
+        group.MapDelete("/{id:guid}", DeleteSpecialty).RequireAuthorization(Policies.Receptionist);
 
         return app;
     }

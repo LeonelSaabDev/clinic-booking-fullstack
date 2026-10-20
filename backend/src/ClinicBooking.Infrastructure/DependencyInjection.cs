@@ -1,9 +1,12 @@
 ﻿using ClinicBooking.Application.Appointments;
+using ClinicBooking.Application.Auth;
 using ClinicBooking.Application.Common;
 using ClinicBooking.Application.Doctors;
 using ClinicBooking.Application.HealthInsurances;
 using ClinicBooking.Application.Patients;
 using ClinicBooking.Application.Specialties;
+using ClinicBooking.Application.Users;
+using ClinicBooking.Infrastructure.Auth;
 using ClinicBooking.Infrastructure.Persistence;
 using ClinicBooking.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +25,13 @@ public static class DependencyInjection
         var clinicTimeZoneId = configuration["Clinic:TimeZone"]
             ?? throw new InvalidOperationException("Setting 'Clinic:TimeZone' was not found.");
 
+        var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
+        jwtOptions.EnsureValid();
+
         services.AddSingleton(TimeProvider.System);
+        services.AddSingleton(jwtOptions);
+        services.AddSingleton<ITokenService, JwtTokenService>();
+        services.AddSingleton<IPasswordHasher, IdentityPasswordHasher>();
         services.AddSingleton(new ClinicTimeZone(TimeZoneInfo.FindSystemTimeZoneById(clinicTimeZoneId)));
 
         services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
@@ -32,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<IDoctorRepository, DoctorRepository>();
         services.AddScoped<IPatientRepository, PatientRepository>();
         services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
 
         return services;
     }
