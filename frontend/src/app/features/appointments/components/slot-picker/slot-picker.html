@@ -1,0 +1,18 @@
+@if (slots().length === 0) {
+  <p class="muted">No free slots on this day. Try another date.</p>
+} @else {
+  <div class="slots" role="radiogroup" aria-label="Free slots">
+    @for (slot of slots(); track slot.startsAt) {
+      <button
+        type="button"
+        class="slot"
+        role="radio"
+        [attr.aria-checked]="selected()?.startsAt === slot.startsAt"
+        [class.selected]="selected()?.startsAt === slot.startsAt"
+        (click)="select.emit(slot)"
+      >
+        {{ clinicTime(slot.startsAt) }}
+      </button>
+    }
+  </div>
+}

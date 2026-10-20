@@ -1,0 +1,33 @@
+@if (appointments().length === 0) {
+  <p class="empty">No appointments on this day.</p>
+} @else {
+  <table>
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Patient</th>
+        <th>Doctor</th>
+        <th>Coverage</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (appointment of appointments(); track appointment.id) {
+        <tr>
+          <td class="time">{{ appointment.time }}</td>
+          <td>
+            <span class="cell-title">{{ appointment.patientName }}</span>
+            <span class="cell-sub">DNI {{ appointment.documentNumber }}</span>
+          </td>
+          <td>{{ appointment.doctorName }}</td>
+          <td>{{ appointment.coverage }}</td>
+          <td>
+            <span class="tag" [class.status-active]="appointment.status === 'Scheduled'">
+              {{ appointment.status }}
+            </span>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

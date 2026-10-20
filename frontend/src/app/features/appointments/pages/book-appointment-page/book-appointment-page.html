@@ -1,0 +1,130 @@
+<a class="back" routerLink="/appointments"><span aria-hidden="true">←</span> Appointments</a>
+
+<header class="page-header">
+  <div>
+    <p class="eyebrow">Front desk</p>
+    <h1>Book appointment</h1>
+  </div>
+</header>
+
+<div class="card card-body steps">
+  @if (serverError(); as message) {
+    <div class="alert" role="alert">
+      <p>{{ message }}</p>
+    </div>
+  }
+
+  <section class="step" aria-labelledby="step-doctor">
+    <h2 id="step-doctor"><span class="step-number">1</span> Doctor and day</h2>
+    <div class="row">
+      <div class="field">
+        <label for="doctor">Doctor</label>
+        <select id="doctor" [value]="doctorId()" (change)="selectDoctor($any($event.target).value)">
+          <option value="" disabled>Select a doctor</option>
+          @for (doctor of doctors.value() ?? []; track doctor.id) {
+            <option [value]="doctor.id">{{ doctor.lastName }}, {{ doctor.firstName }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="date">Day</label>
+        <input id="date" type="date" [value]="date()" (change)="selectDate($any($event.target).value)" />
+      </div>
+    </div>
+  </section>
+
+  <section class="step" aria-labelledby="step-slot">
+    <h2 id="step-slot"><span class="step-number">2</span> Time</h2>
+    @if (!doctorId()) {
+      <p class="muted">Choose a doctor to see their free slots.</p>
+    } @else if (availability.isLoading()) {
+      <p class="muted">Loading free slots...</p>
+    } @else if (availability.error()) {
+      <p class="muted">The free slots could not be loaded.</p>
+    } @else if (availability.hasValue()) {
+      <app-slot-picker
+        [slots]="availability.value()"
+        [selected]="selectedSlot()"
+        (select)="selectedSlot.set($event)"
+      />
+    }
+  </section>
+
+  <section class="step" aria-labelledby="step-patient">
+    <h2 id="step-patient"><span class="step-number">3</span> Patient</h2>
+    @if (selectedPatient(); as patient) {
+      <div class="chosen">
+        <div>
+          <span class="cell-title">{{ patient.lastName }}, {{ patient.firstName }}</span>
+          <span class="cell-sub">DNI {{ patient.documentNumber }}</span>
+        </div>
+        <button type="button" class="btn ghost" (click)="selectedPatient.set(null)">Change</button>
+      </div>
+    } @else {
+      <form class="search" role="search" (submit)="$event.preventDefault(); searchPatients(term.value)">
+        <input #term type="search" aria-label="Search patients" placeholder="Search by name or DNI" />
+        <button type="submit" class="btn secondary">Search</button>
+      </form>
+      @if (patientResults.isLoading()) {
+        <p class="muted">Searching...</p>
+      } @else if (patientResults.hasValue()) {
+        <ul class="results">
+          @for (patient of patientResults.value(); track patient.id) {
+            <li>
+              <button type="button" class="result" (click)="choosePatient(patient)">
+                <span class="cell-title">{{ patient.lastName }}, {{ patient.firstName }}</span>
+                <span class="cell-sub">DNI {{ patient.documentNumber }}</span>
+              </button>
+            </li>
+          } @empty {
+            <li class="muted">
+              No patients found. <a routerLink="/patients/new">Register a new patient</a>.
+            </li>
+          }
+        </ul>
+      }
+    }
+  </section>
+
+  <section class="step" aria-labelledby="step-coverage">
+    <h2 id="step-coverage"><span class="step-number">4</span> Coverage</h2>
+    @if (coverage(); as option) {
+      @switch (option.kind) {
+        @case ("accepted") {
+          <label class="choice">
+            <input
+              type="checkbox"
+              [checked]="useHealthInsurance()"
+              (change)="useHealthInsurance.set($any($event.target).checked)"
+            />
+            Use {{ option.healthInsuranceName }} · member {{ option.memberNumber }}
+          </label>
+          <p class="hint">Uncheck it to book as a private appointment.</p>
+        }
+        @case ("not-accepted") {
+          <p class="muted">
+            This doctor does not accept {{ option.healthInsuranceName }}. The appointment will be private.
+          </p>
+        }
+        @case ("private-only") {
+          <p class="muted">The patient has no health insurance. The appointment will be private.</p>
+        }
+      }
+    } @else {
+      <p class="muted">Choose a doctor and a patient first.</p>
+    }
+  </section>
+
+  <div class="form-actions">
+    <a class="btn secondary" routerLink="/appointments">Cancel</a>
+    <button type="button" class="btn" [disabled]="!canBook()" (click)="book()">
+      @if (booking()) {
+        Booking...
+      } @else if (selectedSlot(); as slot) {
+        Book for {{ clinicTime(slot.startsAt) }}
+      } @else {
+        Book appointment
+      }
+    </button>
+  </div>
+</div>

@@ -1,7 +1,21 @@
 import { Routes } from "@angular/router";
 
 export const routes: Routes = [
-  { path: "", pathMatch: "full", redirectTo: "doctors" },
+  { path: "", pathMatch: "full", redirectTo: "appointments" },
+  {
+    path: "appointments",
+    loadComponent: () =>
+      import("./features/appointments/pages/appointment-list-page/appointment-list-page").then(
+        (m) => m.AppointmentListPage,
+      ),
+  },
+  {
+    path: "appointments/new",
+    loadComponent: () =>
+      import("./features/appointments/pages/book-appointment-page/book-appointment-page").then(
+        (m) => m.BookAppointmentPage,
+      ),
+  },
   {
     path: "doctors",
     loadComponent: () =>
@@ -93,5 +107,5 @@ export const routes: Routes = [
         (m) => m.HealthInsuranceFormPage,
       ),
   },
-  { path: "**", redirectTo: "doctors" },
+  { path: "**", redirectTo: "appointments" },
 ];

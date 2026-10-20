@@ -1,0 +1,10 @@
+.time {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.status-active {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
