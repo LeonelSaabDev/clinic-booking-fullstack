@@ -6,6 +6,8 @@ namespace ClinicBooking.Domain.Appointments;
 
 public sealed class Appointment
 {
+    public static readonly TimeSpan MinimumCancellationNotice = TimeSpan.FromHours(24);
+
     public Guid Id { get; private set; }
     public Guid DoctorId { get; private set; }
     public Guid PatientId { get; private set; }
@@ -56,4 +58,42 @@ public sealed class Appointment
 
     public bool Overlaps(DateTimeOffset startsAt, DateTimeOffset endsAt) =>
         StartsAt < endsAt && startsAt < EndsAt;
+
+    /// <summary>Frees the slot. Thanks to the filtered unique index, it can be booked again right away.</summary>
+    public void Cancel(DateTimeOffset now)
+    {
+        EnsureScheduled("cancelled");
+
+        if (now > StartsAt - MinimumCancellationNotice)
+            throw new DomainException(
+                $"Appointments can only be cancelled at least {MinimumCancellationNotice.TotalHours:0} hours in advance.");
+
+        Status = AppointmentStatus.Cancelled;
+    }
+
+    public void Complete(DateTimeOffset now)
+    {
+        EnsureScheduled("completed");
+        EnsureStarted(now, "completed");
+        Status = AppointmentStatus.Completed;
+    }
+
+    public void MarkNoShow(DateTimeOffset now)
+    {
+        EnsureScheduled("marked as no-show");
+        EnsureStarted(now, "marked as no-show");
+        Status = AppointmentStatus.NoShow;
+    }
+
+    private void EnsureScheduled(string action)
+    {
+        if (Status != AppointmentStatus.Scheduled)
+            throw new DomainException($"Only scheduled appointments can be {action}. This one is {Status}.");
+    }
+
+    private void EnsureStarted(DateTimeOffset now, string action)
+    {
+        if (now < StartsAt)
+            throw new DomainException($"An appointment can only be {action} once it has started.");
+    }
 }

@@ -1,4 +1,4 @@
-using ClinicBooking.Application.Availability;
+﻿using ClinicBooking.Application.Availability;
 using ClinicBooking.Application.Common;
 using ClinicBooking.Application.Doctors;
 using ClinicBooking.Application.Patients;
@@ -11,6 +11,7 @@ public sealed class AppointmentService(
     IDoctorRepository doctors,
     IPatientRepository patients,
     AvailabilityService availability,
+    TimeProvider timeProvider,
     ClinicTimeZone clinicTimeZone)
 {
     public async Task<IReadOnlyList<AppointmentResponse>> ListAsync(
@@ -48,6 +49,29 @@ public sealed class AppointmentService(
 
         // A concurrent booking can still slip past the checks above; the database's unique index
         // is the final guard, and the repository turns its rejection into a ConflictException.
+        await appointments.SaveChangesAsync(cancellationToken);
+
+        return AppointmentResponse.FromEntity(appointment, clinicTimeZone);
+    }
+
+    public Task<AppointmentResponse?> CancelAsync(Guid id, CancellationToken cancellationToken) =>
+        ChangeStatusAsync(id, (appointment, now) => appointment.Cancel(now), cancellationToken);
+
+    public Task<AppointmentResponse?> CompleteAsync(Guid id, CancellationToken cancellationToken) =>
+        ChangeStatusAsync(id, (appointment, now) => appointment.Complete(now), cancellationToken);
+
+    public Task<AppointmentResponse?> MarkNoShowAsync(Guid id, CancellationToken cancellationToken) =>
+        ChangeStatusAsync(id, (appointment, now) => appointment.MarkNoShow(now), cancellationToken);
+
+    /// <summary>Loads, applies one domain transition and saves. The rules themselves live in <see cref="Appointment"/>.</summary>
+    private async Task<AppointmentResponse?> ChangeStatusAsync(
+        Guid id, Action<Appointment, DateTimeOffset> transition, CancellationToken cancellationToken)
+    {
+        var appointment = await appointments.GetByIdAsync(id, cancellationToken);
+        if (appointment is null)
+            return null;
+
+        transition(appointment, timeProvider.GetUtcNow());
         await appointments.SaveChangesAsync(cancellationToken);
 
         return AppointmentResponse.FromEntity(appointment, clinicTimeZone);

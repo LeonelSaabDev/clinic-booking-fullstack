@@ -1,4 +1,4 @@
-using ClinicBooking.Application.Appointments;
+﻿using ClinicBooking.Application.Appointments;
 using ClinicBooking.Application.Availability;
 using ClinicBooking.Application.Common;
 using ClinicBooking.Application.Tests.Doctors;
@@ -34,11 +34,11 @@ public class AppointmentServiceTests
         _juan.SetCoverage(Osde, "210-555");
         _doctors.Saved.Add(_ana);
         _patients.Saved.AddRange([_juan, _laura]);
-        SetClinicNow(Date.AddDays(-1), 12, 0);
+        SetClinicNow(Date.AddDays(-2), 8, 0);
 
         var clinicTimeZone = new ClinicTimeZone(TimeZoneInfo.FindSystemTimeZoneById("America/Argentina/Buenos_Aires"));
         var availability = new AvailabilityService(_doctors, _appointments, _clock, clinicTimeZone);
-        _service = new AppointmentService(_appointments, _doctors, _patients, availability, clinicTimeZone);
+        _service = new AppointmentService(_appointments, _doctors, _patients, availability, _clock, clinicTimeZone);
     }
 
     private void SetClinicNow(DateOnly date, int hour, int minute) =>
@@ -155,5 +155,54 @@ public class AppointmentServiceTests
         var found = await _service.ListAsync(Date, doctorId: Guid.NewGuid(), CancellationToken.None);
 
         Assert.Empty(found);
+    }
+
+    [Fact]
+    public async Task CancelAsync_WithEnoughNotice_FreesTheSlotForAnotherPatient()
+    {
+        var booked = await _service.BookAsync(Request(_laura, At(9, 0)), CancellationToken.None);
+
+        var cancelled = await _service.CancelAsync(booked.Id, CancellationToken.None);
+        var rebooked = await _service.BookAsync(Request(_juan, At(9, 0)), CancellationToken.None);
+
+        Assert.Equal(AppointmentStatus.Cancelled, cancelled?.Status);
+        Assert.Equal(At(9, 0), rebooked.StartsAt);
+    }
+
+    [Fact]
+    public async Task CancelAsync_WithLessThanTheMinimumNotice_ThrowsDomainException()
+    {
+        var booked = await _service.BookAsync(Request(_laura, At(9, 0)), CancellationToken.None);
+        SetClinicNow(Date, 8, 0);
+
+        await Assert.ThrowsAsync<DomainException>(() => _service.CancelAsync(booked.Id, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task CompleteAsync_OnceStarted_CompletesTheAppointment()
+    {
+        var booked = await _service.BookAsync(Request(_laura, At(9, 0)), CancellationToken.None);
+        SetClinicNow(Date, 9, 10);
+
+        var completed = await _service.CompleteAsync(booked.Id, CancellationToken.None);
+
+        Assert.Equal(AppointmentStatus.Completed, completed?.Status);
+    }
+
+    [Fact]
+    public async Task MarkNoShowAsync_OnceStarted_MarksTheAppointment()
+    {
+        var booked = await _service.BookAsync(Request(_laura, At(9, 0)), CancellationToken.None);
+        SetClinicNow(Date, 9, 20);
+
+        var noShow = await _service.MarkNoShowAsync(booked.Id, CancellationToken.None);
+
+        Assert.Equal(AppointmentStatus.NoShow, noShow?.Status);
+    }
+
+    [Fact]
+    public async Task CancelAsync_WhenAppointmentDoesNotExist_ReturnsNull()
+    {
+        Assert.Null(await _service.CancelAsync(Guid.NewGuid(), CancellationToken.None));
     }
 }

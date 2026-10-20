@@ -1,4 +1,4 @@
-using ClinicBooking.Application.Appointments;
+﻿using ClinicBooking.Application.Appointments;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace ClinicBooking.Api.Endpoints;
@@ -12,6 +12,11 @@ public static class AppointmentEndpoints
         group.MapGet("/", ListAppointments);
         group.MapGet("/{id:guid}", GetAppointmentById).WithName(nameof(GetAppointmentById));
         group.MapPost("/", BookAppointment);
+
+        // State transitions are commands with their own rules, not a free "PATCH status" field.
+        group.MapPost("/{id:guid}/cancel", CancelAppointment);
+        group.MapPost("/{id:guid}/complete", CompleteAppointment);
+        group.MapPost("/{id:guid}/no-show", MarkAppointmentAsNoShow);
 
         return app;
     }
@@ -36,4 +41,19 @@ public static class AppointmentEndpoints
         var appointment = await service.BookAsync(request, cancellationToken);
         return TypedResults.CreatedAtRoute(appointment, nameof(GetAppointmentById), new { id = appointment.Id });
     }
+
+    private static async Task<Results<Ok<AppointmentResponse>, NotFound>> CancelAppointment(
+        Guid id, AppointmentService service, CancellationToken cancellationToken) =>
+        ToResult(await service.CancelAsync(id, cancellationToken));
+
+    private static async Task<Results<Ok<AppointmentResponse>, NotFound>> CompleteAppointment(
+        Guid id, AppointmentService service, CancellationToken cancellationToken) =>
+        ToResult(await service.CompleteAsync(id, cancellationToken));
+
+    private static async Task<Results<Ok<AppointmentResponse>, NotFound>> MarkAppointmentAsNoShow(
+        Guid id, AppointmentService service, CancellationToken cancellationToken) =>
+        ToResult(await service.MarkNoShowAsync(id, cancellationToken));
+
+    private static Results<Ok<AppointmentResponse>, NotFound> ToResult(AppointmentResponse? appointment) =>
+        appointment is null ? TypedResults.NotFound() : TypedResults.Ok(appointment);
 }
