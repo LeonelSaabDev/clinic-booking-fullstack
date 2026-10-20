@@ -1,4 +1,4 @@
-import { Component, input } from "@angular/core";
+import { Component, input, output } from "@angular/core";
 import { AppointmentRow } from "../../data-access/appointment.model";
 
 @Component({
@@ -8,4 +8,7 @@ import { AppointmentRow } from "../../data-access/appointment.model";
 })
 export class AppointmentTable {
   readonly appointments = input.required<AppointmentRow[]>();
+  readonly cancel = output<AppointmentRow>();
+  readonly complete = output<AppointmentRow>();
+  readonly noShow = output<AppointmentRow>();
 }

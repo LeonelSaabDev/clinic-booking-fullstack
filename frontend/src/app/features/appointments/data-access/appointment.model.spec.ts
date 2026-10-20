@@ -33,8 +33,10 @@ describe('appointment model', () => {
     memberNumber: '210-555',
   };
 
+  const twoDaysBefore = new Date('2026-10-19T09:00:00-03:00');
+
   it('builds a readable row in clinic time', () => {
-    const [row] = toAppointmentRows([appointment], [ana], [juan], [osde]);
+    const [row] = toAppointmentRows([appointment], [ana], [juan], [osde], twoDaysBefore);
 
     expect(row).toEqual({
       id: 'apt-1',
@@ -44,7 +46,30 @@ describe('appointment model', () => {
       documentNumber: '30123456',
       coverage: 'OSDE · 210-555',
       status: 'Scheduled',
+      canCancel: true,
+      canClose: false,
     });
+  });
+
+  it('stops offering cancellation inside the 24 hour notice window', () => {
+    const [row] = toAppointmentRows([appointment], [ana], [juan], [osde], new Date('2026-10-20T10:00:00-03:00'));
+
+    expect(row.canCancel).toBe(false);
+    expect(row.canClose).toBe(false);
+  });
+
+  it('offers completing or no-show once the appointment started', () => {
+    const [row] = toAppointmentRows([appointment], [ana], [juan], [osde], new Date('2026-10-21T09:05:00-03:00'));
+
+    expect(row.canClose).toBe(true);
+  });
+
+  it('offers no action for an appointment that is already closed', () => {
+    const [row] = toAppointmentRows(
+      [{ ...appointment, status: 'Cancelled' }], [ana], [juan], [osde], twoDaysBefore);
+
+    expect(row.canCancel).toBe(false);
+    expect(row.canClose).toBe(false);
   });
 
   it('labels an appointment without coverage as private', () => {

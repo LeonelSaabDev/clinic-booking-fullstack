@@ -9,6 +9,7 @@
         <th>Doctor</th>
         <th>Coverage</th>
         <th>Status</th>
+        <th><span class="visually-hidden">Actions</span></th>
       </tr>
     </thead>
     <tbody>
@@ -22,9 +23,18 @@
           <td>{{ appointment.doctorName }}</td>
           <td>{{ appointment.coverage }}</td>
           <td>
-            <span class="tag" [class.status-active]="appointment.status === 'Scheduled'">
-              {{ appointment.status }}
+            <span class="tag status" [attr.data-status]="appointment.status">
+              {{ appointment.status === 'NoShow' ? 'No-show' : appointment.status }}
             </span>
+          </td>
+          <td class="actions">
+            @if (appointment.canClose) {
+              <button type="button" class="btn ghost" (click)="complete.emit(appointment)">Complete</button>
+              <button type="button" class="btn ghost danger" (click)="noShow.emit(appointment)">No-show</button>
+            }
+            @if (appointment.canCancel) {
+              <button type="button" class="btn ghost danger" (click)="cancel.emit(appointment)">Cancel</button>
+            }
           </td>
         </tr>
       }

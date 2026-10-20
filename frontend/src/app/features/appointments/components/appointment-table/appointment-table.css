@@ -4,7 +4,17 @@
   white-space: nowrap;
 }
 
-.status-active {
+.status[data-status="Scheduled"] {
   color: var(--accent);
   background: var(--accent-soft);
+}
+
+.status[data-status="Cancelled"] {
+  color: var(--ink-subtle);
+  text-decoration: line-through;
+}
+
+.status[data-status="NoShow"] {
+  color: var(--danger);
+  background: var(--danger-soft);
 }

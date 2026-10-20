@@ -21,4 +21,16 @@ export class AppointmentsApi {
   book(request: BookAppointmentRequest): Observable<Appointment> {
     return this.http.post<Appointment>(this.baseUrl, request);
   }
+
+  cancel(id: string): Observable<Appointment> {
+    return this.http.post<Appointment>(`${this.baseUrl}/${id}/cancel`, null);
+  }
+
+  complete(id: string): Observable<Appointment> {
+    return this.http.post<Appointment>(`${this.baseUrl}/${id}/complete`, null);
+  }
+
+  markNoShow(id: string): Observable<Appointment> {
+    return this.http.post<Appointment>(`${this.baseUrl}/${id}/no-show`, null);
+  }
 }

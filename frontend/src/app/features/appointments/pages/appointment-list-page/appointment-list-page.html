@@ -28,6 +28,11 @@
   } @else if (hasError()) {
     <p class="empty">The appointments could not be loaded.</p>
   } @else {
-    <app-appointment-table [appointments]="rows()" />
+    <app-appointment-table
+      [appointments]="rows()"
+      (cancel)="cancel($event)"
+      (complete)="complete($event)"
+      (noShow)="markNoShow($event)"
+    />
   }
 </div>

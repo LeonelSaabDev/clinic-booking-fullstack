@@ -5,6 +5,9 @@ import { toClinicTime } from "../../../shared/clinic-time";
 
 export type AppointmentStatus = "Scheduled" | "Completed" | "Cancelled" | "NoShow";
 
+/** Mirrors the domain rule; the API stays the source of truth and rejects late cancellations. */
+export const CANCELLATION_NOTICE_HOURS = 24;
+
 export interface Appointment {
   id: string;
   doctorId: string;
@@ -32,6 +35,10 @@ export interface AppointmentRow {
   documentNumber: string;
   coverage: string;
   status: AppointmentStatus;
+  /** Scheduled and still at least CANCELLATION_NOTICE_HOURS away. */
+  canCancel: boolean;
+  /** Scheduled and already started: it can be completed or marked as no-show. */
+  canClose: boolean;
 }
 
 export function toAppointmentRows(
@@ -39,6 +46,7 @@ export function toAppointmentRows(
   doctors: Doctor[],
   patients: Patient[],
   healthInsurances: HealthInsurance[],
+  now = new Date(),
 ): AppointmentRow[] {
   const doctorsById = new Map(doctors.map((d) => [d.id, d]));
   const patientsById = new Map(patients.map((p) => [p.id, p]));
@@ -47,6 +55,9 @@ export function toAppointmentRows(
   return appointments.map((appointment) => {
     const doctor = doctorsById.get(appointment.doctorId);
     const patient = patientsById.get(appointment.patientId);
+    // Comparing instants is safe with Date; only *displaying* them must avoid the viewer's time zone.
+    const hoursUntilStart = (Date.parse(appointment.startsAt) - now.getTime()) / 3_600_000;
+    const isScheduled = appointment.status === "Scheduled";
 
     return {
       id: appointment.id,
@@ -58,6 +69,8 @@ export function toAppointmentRows(
         ? `${healthInsuranceNames.get(appointment.healthInsuranceId) ?? "Health insurance"} · ${appointment.memberNumber}`
         : "Private",
       status: appointment.status,
+      canCancel: isScheduled && hoursUntilStart >= CANCELLATION_NOTICE_HOURS,
+      canClose: isScheduled && hoursUntilStart <= 0,
     };
   });
 }

@@ -1,12 +1,14 @@
+import { HttpErrorResponse } from "@angular/common/http";
 import { Component, computed, inject, input, linkedSignal, signal } from "@angular/core";
 import { rxResource } from "@angular/core/rxjs-interop";
 import { Router, RouterLink } from "@angular/router";
+import { Observable } from "rxjs";
 import { DoctorsApi } from "../../../doctors/data-access/doctors-api";
 import { HealthInsurancesApi } from "../../../health-insurances/data-access/health-insurances-api";
 import { PatientsApi } from "../../../patients/data-access/patients-api";
 import { todayAsIsoDate } from "../../../../shared/clinic-time";
 import { AppointmentTable } from "../../components/appointment-table/appointment-table";
-import { toAppointmentRows } from "../../data-access/appointment.model";
+import { Appointment, AppointmentRow, toAppointmentRows } from "../../data-access/appointment.model";
 import { AppointmentsApi } from "../../data-access/appointments-api";
 
 @Component({
@@ -58,6 +60,39 @@ export class AppointmentListPage {
       this.healthInsurances.value() ?? [],
     ),
   );
+
+  protected cancel(appointment: AppointmentRow): void {
+    this.runTransition(
+      `Cancel the ${appointment.time} appointment of ${appointment.patientName}? The slot will be free again.`,
+      this.appointmentsApi.cancel(appointment.id),
+    );
+  }
+
+  protected complete(appointment: AppointmentRow): void {
+    this.runTransition(null, this.appointmentsApi.complete(appointment.id));
+  }
+
+  protected markNoShow(appointment: AppointmentRow): void {
+    this.runTransition(
+      `Mark ${appointment.patientName} as a no-show for ${appointment.time}?`,
+      this.appointmentsApi.markNoShow(appointment.id),
+    );
+  }
+
+  /** Asks for confirmation when needed, runs one status change and refreshes the day. */
+  private runTransition(confirmation: string | null, request$: Observable<Appointment>): void {
+    if (confirmation && !confirm(confirmation)) {
+      return;
+    }
+
+    request$.subscribe({
+      next: () => this.appointments.reload(),
+      error: (error: HttpErrorResponse) => {
+        alert(error.error?.detail ?? "The appointment could not be updated. Please try again.");
+        this.appointments.reload();
+      },
+    });
+  }
 
   protected changeDate(value: string): void {
     if (value) {
