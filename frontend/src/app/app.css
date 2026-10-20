@@ -57,7 +57,7 @@ nav a.active {
 }
 
 .app-main {
-  max-width: 880px;
+  max-width: 1040px;
   margin: 0 auto;
   padding: clamp(2.5rem, 7vw, 4.5rem) clamp(1rem, 4vw, 3rem);
 }
