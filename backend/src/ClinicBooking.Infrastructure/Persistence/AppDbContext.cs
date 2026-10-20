@@ -1,5 +1,6 @@
 ﻿using ClinicBooking.Domain.Doctors;
 using ClinicBooking.Domain.HealthInsurances;
+using ClinicBooking.Domain.Patients;
 using ClinicBooking.Domain.Specialties;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +13,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<HealthInsurance> HealthInsurances => Set<HealthInsurance>();
 
     public DbSet<Doctor> Doctors => Set<Doctor>();
+
+    public DbSet<Patient> Patients => Set<Patient>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);

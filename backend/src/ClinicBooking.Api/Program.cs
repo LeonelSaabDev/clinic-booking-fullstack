@@ -1,4 +1,4 @@
-using ClinicBooking.Application;
+﻿using ClinicBooking.Application;
 using ClinicBooking.Infrastructure;
 using ClinicBooking.Api.Endpoints;
 using Scalar.AspNetCore;
@@ -44,6 +44,7 @@ app.UseCors(FrontendCorsPolicy);
 app.MapSpecialtyEndpoints();
 app.MapHealthInsuranceEndpoints();
 app.MapDoctorEndpoints();
+app.MapPatientEndpoints();
 
 app.Run();
 

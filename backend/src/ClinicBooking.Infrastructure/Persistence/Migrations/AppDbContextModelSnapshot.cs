@@ -76,6 +76,53 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                     b.ToTable("HealthInsurances");
                 });
 
+            modelBuilder.Entity("ClinicBooking.Domain.Patients.Patient", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DocumentNumber")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("nvarchar(254)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid?>("HealthInsuranceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("MemberNumber")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentNumber")
+                        .IsUnique();
+
+                    b.HasIndex("HealthInsuranceId");
+
+                    b.ToTable("Patients");
+                });
+
             modelBuilder.Entity("ClinicBooking.Domain.Specialties.Specialty", b =>
                 {
                     b.Property<Guid>("Id")
@@ -152,6 +199,14 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                     b.Navigation("AcceptedHealthInsurances");
 
                     b.Navigation("WeeklySchedule");
+                });
+
+            modelBuilder.Entity("ClinicBooking.Domain.Patients.Patient", b =>
+                {
+                    b.HasOne("ClinicBooking.Domain.HealthInsurances.HealthInsurance", null)
+                        .WithMany()
+                        .HasForeignKey("HealthInsuranceId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 #pragma warning restore 612, 618
         }
