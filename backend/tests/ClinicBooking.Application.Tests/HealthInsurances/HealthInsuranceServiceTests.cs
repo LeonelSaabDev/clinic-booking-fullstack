@@ -1,8 +1,10 @@
 ﻿using ClinicBooking.Application.Common;
 using ClinicBooking.Application.HealthInsurances;
 using ClinicBooking.Application.Tests.Doctors;
+using ClinicBooking.Application.Tests.Patients;
 using ClinicBooking.Domain.Doctors;
 using ClinicBooking.Domain.HealthInsurances;
+using ClinicBooking.Domain.Patients;
 
 namespace ClinicBooking.Application.Tests.HealthInsurances;
 
@@ -10,11 +12,12 @@ public class HealthInsuranceServiceTests
 {
     private readonly FakeHealthInsuranceRepository _repository = new();
     private readonly FakeDoctorRepository _doctors = new();
+    private readonly FakePatientRepository _patients = new();
     private readonly HealthInsuranceService _service;
 
     public HealthInsuranceServiceTests()
     {
-        _service = new HealthInsuranceService(_repository, _doctors);
+        _service = new HealthInsuranceService(_repository, _doctors, _patients);
     }
 
     [Fact]
@@ -172,6 +175,20 @@ public class HealthInsuranceServiceTests
         var doctor = Doctor.Create("Ana", "García", "MN 12345", Guid.CreateVersion7());
         doctor.SetAcceptedHealthInsurances([osde.Id]);
         _doctors.Saved.Add(doctor);
+
+        await Assert.ThrowsAsync<ConflictException>(
+            () => _service.DeleteAsync(osde.Id, CancellationToken.None));
+        Assert.Single(_repository.Saved);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenPatientsHaveTheHealthInsurance_ThrowsConflictException()
+    {
+        var osde = HealthInsurance.Create("OSDE");
+        _repository.Saved.Add(osde);
+        var patient = Patient.Create("Juan", "Pérez", "30123456", "juan@mail.com", "1155551234");
+        patient.SetCoverage(osde.Id, "210-555");
+        _patients.Saved.Add(patient);
 
         await Assert.ThrowsAsync<ConflictException>(
             () => _service.DeleteAsync(osde.Id, CancellationToken.None));
