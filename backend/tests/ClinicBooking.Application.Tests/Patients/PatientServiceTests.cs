@@ -1,6 +1,9 @@
-using ClinicBooking.Application.Common;
+﻿using ClinicBooking.Application.Common;
 using ClinicBooking.Application.Patients;
+using ClinicBooking.Application.Tests.Appointments;
 using ClinicBooking.Application.Tests.HealthInsurances;
+using ClinicBooking.Domain.Appointments;
+using ClinicBooking.Domain.Doctors;
 using ClinicBooking.Domain.HealthInsurances;
 using ClinicBooking.Domain.Patients;
 
@@ -10,13 +13,14 @@ public class PatientServiceTests
 {
     private readonly FakePatientRepository _patients = new();
     private readonly FakeHealthInsuranceRepository _healthInsurances = new();
+    private readonly FakeAppointmentRepository _appointments = new();
     private readonly PatientService _service;
     private readonly HealthInsurance _osde = HealthInsurance.Create("OSDE");
 
     public PatientServiceTests()
     {
         _healthInsurances.Saved.Add(_osde);
-        _service = new PatientService(_patients, _healthInsurances);
+        _service = new PatientService(_patients, _healthInsurances, _appointments);
     }
 
     private static CreatePatientRequest NewRequest(
@@ -133,5 +137,17 @@ public class PatientServiceTests
     public async Task DeleteAsync_WhenPatientDoesNotExist_ReturnsFalse()
     {
         Assert.False(await _service.DeleteAsync(Guid.NewGuid(), CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenPatientHasAppointments_ThrowsConflictException()
+    {
+        var laura = ExistingPatient("30123456");
+        _patients.Saved.Add(laura);
+        var doctor = Doctor.Create("Ana", "García", "MN 12345", Guid.CreateVersion7());
+        _appointments.Saved.Add(Appointment.Book(doctor, laura, DateTimeOffset.UtcNow.AddDays(1), false));
+
+        await Assert.ThrowsAsync<ConflictException>(() => _service.DeleteAsync(laura.Id, CancellationToken.None));
+        Assert.Single(_patients.Saved);
     }
 }

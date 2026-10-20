@@ -1,7 +1,10 @@
-using ClinicBooking.Application.Availability;
+﻿using ClinicBooking.Application.Availability;
 using ClinicBooking.Application.Common;
+using ClinicBooking.Application.Tests.Appointments;
 using ClinicBooking.Application.Tests.Doctors;
+using ClinicBooking.Domain.Appointments;
 using ClinicBooking.Domain.Doctors;
+using ClinicBooking.Domain.Patients;
 using Microsoft.Extensions.Time.Testing;
 
 namespace ClinicBooking.Application.Tests.Availability;
@@ -12,6 +15,7 @@ public class AvailabilityServiceTests
     private static readonly DateOnly Date = new(2026, 10, 21);
 
     private readonly FakeDoctorRepository _doctors = new();
+    private readonly FakeAppointmentRepository _appointments = new();
     private readonly FakeTimeProvider _clock = new();
     private readonly AvailabilityService _service;
     private readonly Doctor _doctor = Doctor.Create("Ana", "García", "MN 12345", Guid.CreateVersion7());
@@ -22,7 +26,7 @@ public class AvailabilityServiceTests
         _doctors.Saved.Add(_doctor);
 
         var argentina = TimeZoneInfo.FindSystemTimeZoneById("America/Argentina/Buenos_Aires");
-        _service = new AvailabilityService(_doctors, _clock, new ClinicTimeZone(argentina));
+        _service = new AvailabilityService(_doctors, _appointments, _clock, new ClinicTimeZone(argentina));
     }
 
     private void SetClinicNow(DateOnly date, int hour, int minute) =>
@@ -83,5 +87,20 @@ public class AvailabilityServiceTests
         var slots = await _service.GetAvailableSlotsAsync(Guid.NewGuid(), Date, CancellationToken.None);
 
         Assert.Null(slots);
+    }
+
+    [Fact]
+    public async Task GetAvailableSlotsAsync_ExcludesBookedSlots()
+    {
+        SetClinicNow(Date.AddDays(-1), 12, 0);
+        var patient = Patient.Create("Juan", "Pérez", "30123456", "juan@mail.com", "1155551234");
+        var nine = new DateTimeOffset(2026, 10, 21, 9, 0, 0, ArgentinaOffset);
+        _appointments.Saved.Add(Appointment.Book(_doctor, patient, nine, useHealthInsurance: false));
+
+        var slots = await _service.GetAvailableSlotsAsync(_doctor.Id, Date, CancellationToken.None);
+
+        Assert.NotNull(slots);
+        Assert.Equal(3, slots.Count);
+        Assert.DoesNotContain(slots, s => s.StartsAt == nine);
     }
 }

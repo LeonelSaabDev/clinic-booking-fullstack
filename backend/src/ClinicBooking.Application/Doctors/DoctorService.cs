@@ -1,3 +1,4 @@
+﻿using ClinicBooking.Application.Appointments;
 using ClinicBooking.Application.Common;
 using ClinicBooking.Application.HealthInsurances;
 using ClinicBooking.Application.Specialties;
@@ -8,7 +9,8 @@ namespace ClinicBooking.Application.Doctors;
 public sealed class DoctorService(
     IDoctorRepository doctors,
     ISpecialtyRepository specialties,
-    IHealthInsuranceRepository healthInsurances)
+    IHealthInsuranceRepository healthInsurances,
+    IAppointmentRepository appointments)
 {
     public async Task<IReadOnlyList<DoctorResponse>> GetAllAsync(CancellationToken cancellationToken)
     {
@@ -79,6 +81,9 @@ public sealed class DoctorService(
         var doctor = await doctors.GetByIdAsync(id, cancellationToken);
         if (doctor is null)
             return false;
+
+        if (await appointments.ExistsByDoctorAsync(doctor.Id, cancellationToken))
+            throw new ConflictException("This doctor cannot be deleted because they have appointments.");
 
         doctors.Remove(doctor);
         await doctors.SaveChangesAsync(cancellationToken);

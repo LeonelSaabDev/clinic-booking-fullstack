@@ -1,9 +1,12 @@
-using ClinicBooking.Application.Common;
+﻿using ClinicBooking.Application.Common;
 using ClinicBooking.Application.Doctors;
+using ClinicBooking.Application.Tests.Appointments;
 using ClinicBooking.Application.Tests.HealthInsurances;
 using ClinicBooking.Application.Tests.Specialties;
+using ClinicBooking.Domain.Appointments;
 using ClinicBooking.Domain.Doctors;
 using ClinicBooking.Domain.HealthInsurances;
+using ClinicBooking.Domain.Patients;
 using ClinicBooking.Domain.Specialties;
 
 namespace ClinicBooking.Application.Tests.Doctors;
@@ -13,6 +16,7 @@ public class DoctorServiceTests
     private readonly FakeDoctorRepository _doctors = new();
     private readonly FakeSpecialtyRepository _specialties = new();
     private readonly FakeHealthInsuranceRepository _healthInsurances = new();
+    private readonly FakeAppointmentRepository _appointments = new();
     private readonly DoctorService _service;
 
     private readonly Specialty _cardiology = Specialty.Create("Cardiology");
@@ -22,7 +26,7 @@ public class DoctorServiceTests
     {
         _specialties.Saved.Add(_cardiology);
         _healthInsurances.Saved.Add(_osde);
-        _service = new DoctorService(_doctors, _specialties, _healthInsurances);
+        _service = new DoctorService(_doctors, _specialties, _healthInsurances, _appointments);
     }
 
     [Fact]
@@ -196,5 +200,17 @@ public class DoctorServiceTests
         var deleted = await _service.DeleteAsync(Guid.NewGuid(), CancellationToken.None);
 
         Assert.False(deleted);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenDoctorHasAppointments_ThrowsConflictException()
+    {
+        var ana = Doctor.Create("Ana", "García", "MN 12345", _cardiology.Id);
+        _doctors.Saved.Add(ana);
+        var patient = Patient.Create("Juan", "Pérez", "30123456", "juan@mail.com", "1155551234");
+        _appointments.Saved.Add(Appointment.Book(ana, patient, DateTimeOffset.UtcNow.AddDays(1), false));
+
+        await Assert.ThrowsAsync<ConflictException>(() => _service.DeleteAsync(ana.Id, CancellationToken.None));
+        Assert.Single(_doctors.Saved);
     }
 }

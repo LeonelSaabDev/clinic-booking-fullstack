@@ -1,3 +1,4 @@
+using ClinicBooking.Application.Appointments;
 using ClinicBooking.Application.Common;
 using ClinicBooking.Application.Doctors;
 
@@ -5,6 +6,7 @@ namespace ClinicBooking.Application.Availability;
 
 public sealed class AvailabilityService(
     IDoctorRepository doctors,
+    IAppointmentRepository appointments,
     TimeProvider timeProvider,
     ClinicTimeZone clinicTimeZone)
 {
@@ -18,17 +20,22 @@ public sealed class AvailabilityService(
         var now = timeProvider.GetUtcNow();
         var duration = TimeSpan.FromMinutes(doctor.AppointmentDurationMinutes);
 
-        return doctor.GetSlotStarts(date.DayOfWeek)
-            .Select(start => ToClinicInstant(date, start))
+        var upcomingStarts = doctor.GetSlotStarts(date.DayOfWeek)
+            .Select(start => clinicTimeZone.ToInstant(date, start))
             .Where(startsAt => startsAt > now)
+            .ToList();
+
+        if (upcomingStarts.Count == 0)
+            return [];
+
+        // DateTimeOffset equality compares instants, so UTC and clinic-time values match.
+        var booked = (await appointments.GetScheduledStartsAsync(
+                doctorId, upcomingStarts[0], upcomingStarts[^1] + duration, cancellationToken))
+            .ToHashSet();
+
+        return upcomingStarts
+            .Where(startsAt => !booked.Contains(startsAt))
             .Select(startsAt => new AvailableSlotResponse(startsAt, startsAt + duration))
             .ToList();
-    }
-
-    private DateTimeOffset ToClinicInstant(DateOnly date, TimeOnly time)
-    {
-        var localDateTime = date.ToDateTime(time);
-        var offset = clinicTimeZone.TimeZone.GetUtcOffset(localDateTime);
-        return new DateTimeOffset(localDateTime, offset);
     }
 }

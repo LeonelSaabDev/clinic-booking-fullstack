@@ -1,10 +1,14 @@
+﻿using ClinicBooking.Application.Appointments;
 using ClinicBooking.Application.Common;
 using ClinicBooking.Application.HealthInsurances;
 using ClinicBooking.Domain.Patients;
 
 namespace ClinicBooking.Application.Patients;
 
-public sealed class PatientService(IPatientRepository patients, IHealthInsuranceRepository healthInsurances)
+public sealed class PatientService(
+    IPatientRepository patients,
+    IHealthInsuranceRepository healthInsurances,
+    IAppointmentRepository appointments)
 {
     public async Task<IReadOnlyList<PatientResponse>> SearchAsync(string? searchTerm, CancellationToken cancellationToken)
     {
@@ -55,6 +59,9 @@ public sealed class PatientService(IPatientRepository patients, IHealthInsurance
         var patient = await patients.GetByIdAsync(id, cancellationToken);
         if (patient is null)
             return false;
+
+        if (await appointments.ExistsByPatientAsync(patient.Id, cancellationToken))
+            throw new ConflictException("This patient cannot be deleted because they have appointments.");
 
         patients.Remove(patient);
         await patients.SaveChangesAsync(cancellationToken);
