@@ -1,4 +1,5 @@
-﻿using ClinicBooking.Application.Doctors;
+﻿using ClinicBooking.Application.Availability;
+using ClinicBooking.Application.Doctors;
 using ClinicBooking.Application.HealthInsurances;
 using ClinicBooking.Application.Specialties;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +13,7 @@ public static class DependencyInjection
         services.AddScoped<SpecialtyService>();
         services.AddScoped<HealthInsuranceService>();
         services.AddScoped<DoctorService>();
+        services.AddScoped<AvailabilityService>();
 
         return services;
     }

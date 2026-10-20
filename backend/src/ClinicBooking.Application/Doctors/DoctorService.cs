@@ -53,6 +53,27 @@ public sealed class DoctorService(
         return DoctorResponse.FromEntity(doctor);
     }
 
+    public async Task<DoctorScheduleResponse?> GetScheduleAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var doctor = await doctors.GetByIdAsync(id, cancellationToken);
+        return doctor is null ? null : DoctorScheduleResponse.FromEntity(doctor);
+    }
+
+    public async Task<DoctorScheduleResponse?> UpdateScheduleAsync(
+        Guid id, UpdateDoctorScheduleRequest request, CancellationToken cancellationToken)
+    {
+        var doctor = await doctors.GetByIdAsync(id, cancellationToken);
+        if (doctor is null)
+            return null;
+
+        var blocks = (request.Blocks ?? []).Select(b => ScheduleBlock.Create(b.Day, b.Start, b.End));
+        doctor.SetSchedule(request.AppointmentDurationMinutes, blocks);
+
+        await doctors.SaveChangesAsync(cancellationToken);
+
+        return DoctorScheduleResponse.FromEntity(doctor);
+    }
+
     public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
         var doctor = await doctors.GetByIdAsync(id, cancellationToken);
