@@ -1,14 +1,21 @@
-<h1>Health insurances</h1>
-<a routerLink="/health-insurances/new">New health insurance</a>
+<header class="page-header">
+  <div>
+    <p class="eyebrow">Clinic setup</p>
+    <h1>Health insurances</h1>
+  </div>
+  <a class="btn" routerLink="/health-insurances/new">New health insurance</a>
+</header>
 
-@if (healthInsurances.isLoading()) {
-  <p>Loading...</p>
-} @else if (healthInsurances.error()) {
-  <p>The health insurances could not be loaded.</p>
-} @else {
-  <app-health-insurance-table
-    [healthInsurances]="healthInsurances.value() ?? []"
-    (rename)="renameHealthInsurance($event)"
-    (delete)="deleteHealthInsurance($event)"
-  />
-}
+<div class="card">
+  @if (healthInsurances.isLoading()) {
+    <p class="empty">Loading health insurances...</p>
+  } @else if (healthInsurances.error()) {
+    <p class="empty">The health insurances could not be loaded.</p>
+  } @else {
+    <app-health-insurance-table
+      [healthInsurances]="healthInsurances.value() ?? []"
+      (rename)="renameHealthInsurance($event)"
+      (delete)="deleteHealthInsurance($event)"
+    />
+  }
+</div>

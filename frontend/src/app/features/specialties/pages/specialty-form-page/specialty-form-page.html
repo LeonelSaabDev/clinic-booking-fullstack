@@ -1,26 +1,34 @@
-<a routerLink="/specialties"><span aria-hidden="true">←</span> All specialties</a>
-<h1>{{ isEditMode() ? 'Rename specialty' : 'New specialty' }}</h1>
+<a class="back" routerLink="/specialties"><span aria-hidden="true">←</span> All specialties</a>
 
-@if (serverError(); as message) {
-  <div class="alert" role="alert">
-    <p>{{ message }}</p>
+<header class="page-header">
+  <div>
+    <p class="eyebrow">{{ isEditMode() ? 'Editing' : 'Clinic setup' }}</p>
+    <h1>{{ isEditMode() ? 'Rename specialty' : 'New specialty' }}</h1>
   </div>
-}
+</header>
 
-@if (!isEditMode()) {
-  <app-specialty-form [saving]="saving()" (save)="save($event)" (cancel)="cancel()" />
-} @else if (specialty.error()) {
-  <div class="alert" role="alert">
-    <p>The specialty could not be loaded. It may have been deleted.</p>
-    <button type="button" (click)="cancel()">Back to specialties</button>
-  </div>
-} @else if (specialty.hasValue()) {
-  <app-specialty-form
-    [specialty]="specialty.value()"
-    [saving]="saving()"
-    (save)="save($event)"
-    (cancel)="cancel()"
-  />
-} @else {
-  <p>Loading specialty...</p>
-}
+<div class="card card-body">
+  @if (serverError(); as message) {
+    <div class="alert" role="alert">
+      <p>{{ message }}</p>
+    </div>
+  }
+
+  @if (!isEditMode()) {
+    <app-specialty-form [saving]="saving()" (save)="save($event)" (cancel)="cancel()" />
+  } @else if (specialty.error()) {
+    <div class="alert" role="alert">
+      <p>The specialty could not be loaded. It may have been deleted.</p>
+      <button type="button" class="btn secondary" (click)="cancel()">Back to specialties</button>
+    </div>
+  } @else if (specialty.hasValue()) {
+    <app-specialty-form
+      [specialty]="specialty.value()"
+      [saving]="saving()"
+      (save)="save($event)"
+      (cancel)="cancel()"
+    />
+  } @else {
+    <p class="muted">Loading specialty...</p>
+  }
+</div>

@@ -1,1 +1,358 @@
-/* You can add global styles to this file, and also import other style files */
+/* ---------- Design tokens ---------- */
+:root {
+  --font-display: "Instrument Serif", Georgia, serif;
+  --font-body: "Albert Sans", "Segoe UI", sans-serif;
+
+  --bg: #f6f5f1;
+  --surface: #ffffff;
+  --surface-muted: #efeee8;
+  --ink: #17201e;
+  --ink-muted: #56605d;
+  --ink-subtle: #8a928f;
+  --line: #e2e1da;
+
+  --accent: #2f6b5e;
+  --accent-hover: #24564b;
+  --accent-ink: #ffffff;
+  --accent-soft: #e2eeea;
+
+  --danger: #b42318;
+  --danger-soft: #fbeae8;
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --shadow: 0 1px 2px rgb(23 32 30 / 4%), 0 16px 40px -24px rgb(23 32 30 / 18%);
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1312;
+    --surface: #161b1a;
+    --surface-muted: #1d2321;
+    --ink: #eef1ef;
+    --ink-muted: #a3aca8;
+    --ink-subtle: #6f7874;
+    --line: #262d2b;
+
+    --accent: #86c2b2;
+    --accent-hover: #a3d3c6;
+    --accent-ink: #0c1a16;
+    --accent-soft: #1b2c28;
+
+    --danger: #f2867b;
+    --danger-soft: #33191a;
+
+    --shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 16px 40px -24px rgb(0 0 0 / 70%);
+  }
+}
+
+/* ---------- Base ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 5vw, 3rem);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+p {
+  margin: 0;
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.muted {
+  color: var(--ink-muted);
+}
+
+/* ---------- Page layout ---------- */
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.eyebrow {
+  margin-bottom: 0.75rem;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-subtle);
+}
+
+.back {
+  display: inline-flex;
+  gap: 0.375rem;
+  margin-bottom: 1.5rem;
+  font-size: 14px;
+  color: var(--ink-muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.back:hover {
+  color: var(--accent);
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+}
+
+.card-body {
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 1.125rem;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-ink);
+  text-decoration: none;
+  white-space: nowrap;
+  background: var(--accent);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    color 0.15s,
+    transform 0.15s var(--ease);
+}
+
+.btn:hover {
+  background: var(--accent-hover);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn.secondary {
+  color: var(--ink);
+  background: var(--surface);
+  border-color: var(--line);
+}
+
+.btn.secondary:hover {
+  background: var(--surface-muted);
+}
+
+.btn.ghost {
+  height: 32px;
+  padding: 0 0.75rem;
+  font-weight: 500;
+  color: var(--ink-muted);
+  background: transparent;
+}
+
+.btn.ghost:hover {
+  color: var(--ink);
+  background: var(--surface-muted);
+}
+
+.btn.ghost.danger:hover {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+/* ---------- Table ---------- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  padding: 0.875rem 1.5rem;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--ink-subtle);
+  border-bottom: 1px solid var(--line);
+}
+
+td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr {
+  transition: background-color 0.15s;
+}
+
+tbody tr:hover {
+  background: var(--surface-muted);
+}
+
+.actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.empty {
+  padding: 3.5rem 1.5rem;
+  text-align: center;
+  color: var(--ink-muted);
+}
+
+/* ---------- Forms ---------- */
+.field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.counter {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-subtle);
+}
+
+input {
+  width: 100%;
+  height: 46px;
+  padding: 0 0.875rem;
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+input::placeholder {
+  color: var(--ink-subtle);
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+input.ng-invalid.ng-touched {
+  border-color: var(--danger);
+}
+
+.field-error {
+  font-size: 13px;
+  color: var(--danger);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+/* ---------- Feedback ---------- */
+.alert {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+  margin-bottom: 1.5rem;
+  padding: 0.875rem 1rem;
+  font-size: 14px;
+  color: var(--danger);
+  background: var(--danger-soft);
+  border-left: 3px solid var(--danger);
+  border-radius: var(--radius-sm);
+}
+
+/* ---------- Motion ---------- */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.page-header,
+.back,
+.card {
+  animation: rise 0.45s var(--ease) both;
+}
+
+.card {
+  animation-delay: 80ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -1,14 +1,21 @@
-<h1>Specialties</h1>
-<a routerLink="/specialties/new">New specialty</a>
+<header class="page-header">
+  <div>
+    <p class="eyebrow">Clinic setup</p>
+    <h1>Specialties</h1>
+  </div>
+  <a class="btn" routerLink="/specialties/new">New specialty</a>
+</header>
 
-@if (specialties.isLoading()) {
-  <p>Loading...</p>
-} @else if (specialties.error()) {
-  <p>The specialties could not be loaded.</p>
-} @else {
-  <app-specialty-table
-    [specialties]="specialties.value() ?? []"
-    (rename)="renameSpecialty($event)"
-    (delete)="deleteSpecialty($event)"
-  />
-}
+<div class="card">
+  @if (specialties.isLoading()) {
+    <p class="empty">Loading specialties...</p>
+  } @else if (specialties.error()) {
+    <p class="empty">The specialties could not be loaded.</p>
+  } @else {
+    <app-specialty-table
+      [specialties]="specialties.value() ?? []"
+      (rename)="renameSpecialty($event)"
+      (delete)="deleteSpecialty($event)"
+    />
+  }
+</div>
