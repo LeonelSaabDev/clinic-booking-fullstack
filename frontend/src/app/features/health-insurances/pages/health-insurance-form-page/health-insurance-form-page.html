@@ -1,0 +1,26 @@
+<a routerLink="/health-insurances"><span aria-hidden="true">←</span> All health insurances</a>
+<h1>{{ isEditMode() ? 'Rename health insurance' : 'New health insurance' }}</h1>
+
+@if (serverError(); as message) {
+  <div class="alert" role="alert">
+    <p>{{ message }}</p>
+  </div>
+}
+
+@if (!isEditMode()) {
+  <app-health-insurance-form [saving]="saving()" (save)="save($event)" (cancel)="cancel()" />
+} @else if (healthInsurance.error()) {
+  <div class="alert" role="alert">
+    <p>The health insurance could not be loaded. It may have been deleted.</p>
+    <button type="button" (click)="cancel()">Back to health insurances</button>
+  </div>
+} @else if (healthInsurance.hasValue()) {
+  <app-health-insurance-form
+    [healthInsurance]="healthInsurance.value()"
+    [saving]="saving()"
+    (save)="save($event)"
+    (cancel)="cancel()"
+  />
+} @else {
+  <p>Loading health insurance...</p>
+}
