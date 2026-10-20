@@ -1,4 +1,5 @@
-﻿using ClinicBooking.Application.HealthInsurances;
+﻿using ClinicBooking.Application.Doctors;
+using ClinicBooking.Application.HealthInsurances;
 using ClinicBooking.Application.Specialties;
 using ClinicBooking.Infrastructure.Persistence;
 using ClinicBooking.Infrastructure.Persistence.Repositories;
@@ -19,6 +20,7 @@ public static class DependencyInjection
 
         services.AddScoped<ISpecialtyRepository, SpecialtyRepository>();
         services.AddScoped<IHealthInsuranceRepository, HealthInsuranceRepository>();
+        services.AddScoped<IDoctorRepository, DoctorRepository>();
 
         return services;
     }

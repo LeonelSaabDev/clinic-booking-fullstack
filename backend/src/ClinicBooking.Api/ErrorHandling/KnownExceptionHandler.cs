@@ -13,6 +13,7 @@ internal sealed class KnownExceptionHandler(IProblemDetailsService problemDetail
         {
             DomainException => (StatusCodes.Status400BadRequest, "Validation error"),
             BadHttpRequestException => (StatusCodes.Status400BadRequest, "Invalid request"),
+            InvalidReferenceException => (StatusCodes.Status400BadRequest, "Invalid reference"),
             ConflictException => (StatusCodes.Status409Conflict, "Conflict"),
             _ => null
         };

@@ -39,6 +39,7 @@ app.UseCors(FrontendCorsPolicy);
 
 app.MapSpecialtyEndpoints();
 app.MapHealthInsuranceEndpoints();
+app.MapDoctorEndpoints();
 
 app.Run();
 

@@ -20,6 +20,15 @@ internal sealed class HealthInsuranceRepository(AppDbContext context) : IHealthI
             h => h.Name == name && (excludedId == null || h.Id != excludedId.Value),
             cancellationToken);
 
+    public async Task<bool> AllExistAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken)
+    {
+        if (ids.Count == 0)
+            return true;
+
+        var existingCount = await context.HealthInsurances.CountAsync(h => ids.Contains(h.Id), cancellationToken);
+        return existingCount == ids.Count;
+    }
+
     public void Add(HealthInsurance healthInsurance) => context.HealthInsurances.Add(healthInsurance);
 
     public void Remove(HealthInsurance healthInsurance) => context.HealthInsurances.Remove(healthInsurance);
