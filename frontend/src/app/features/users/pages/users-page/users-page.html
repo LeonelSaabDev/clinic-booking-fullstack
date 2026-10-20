@@ -1,0 +1,34 @@
+<header class="page-header">
+  <div>
+    <p class="eyebrow">Administration</p>
+    <h1>User accounts</h1>
+  </div>
+</header>
+
+<div class="layout">
+  <section class="card card-body" aria-labelledby="new-account-title">
+    <h2 id="new-account-title">New account</h2>
+    <p class="muted intro">Doctors sign in to see their own agenda. Share the initial password with them in person.</p>
+
+    @if (serverError(); as message) {
+      <div class="alert" role="alert">
+        <p>{{ message }}</p>
+      </div>
+    }
+    @if (createdEmail(); as email) {
+      <p class="success" role="status">Account for {{ email }} created.</p>
+    }
+
+    <app-user-form [availableDoctors]="availableDoctors()" [saving]="saving()" (save)="create($event)" />
+  </section>
+
+  <div class="card">
+    @if (isLoading()) {
+      <p class="empty">Loading accounts...</p>
+    } @else if (hasError()) {
+      <p class="empty">The accounts could not be loaded.</p>
+    } @else {
+      <app-user-table [users]="rows()" />
+    }
+  </div>
+</div>

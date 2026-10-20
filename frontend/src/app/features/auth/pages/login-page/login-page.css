@@ -1,0 +1,21 @@
+.login {
+  display: grid;
+  gap: 2rem;
+  max-width: 420px;
+  margin: clamp(1rem, 6vh, 4rem) auto 0;
+}
+
+header {
+  display: grid;
+  gap: 0.75rem;
+}
+
+form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+form .btn {
+  margin-top: 0.5rem;
+  height: 46px;
+}

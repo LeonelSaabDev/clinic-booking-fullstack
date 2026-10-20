@@ -1,0 +1,37 @@
+<section class="login">
+  <header>
+    <p class="eyebrow">Staff access</p>
+    <h1>Sign in</h1>
+    <p class="muted">Use the account the front desk created for you.</p>
+  </header>
+
+  <div class="card card-body">
+    @if (error(); as message) {
+      <div class="alert" role="alert">
+        <p>{{ message }}</p>
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" autocomplete="username" formControlName="email" />
+        @if (form.controls.email.touched && form.controls.email.invalid) {
+          <span class="field-error">Enter a valid email address.</span>
+        }
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" type="password" autocomplete="current-password" formControlName="password" />
+        @if (form.controls.password.touched && form.controls.password.invalid) {
+          <span class="field-error">Password is required.</span>
+        }
+      </div>
+
+      <button type="submit" class="btn" [disabled]="signingIn()">
+        {{ signingIn() ? 'Signing in...' : 'Sign in' }}
+      </button>
+    </form>
+  </div>
+</section>

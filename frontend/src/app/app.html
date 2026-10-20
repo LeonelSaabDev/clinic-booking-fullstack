@@ -3,23 +3,29 @@
     <span class="brand-mark" aria-hidden="true"></span>
     ClinicBooking
   </a>
-  <nav aria-label="Main navigation">
-    <a routerLink="/appointments" routerLinkActive="active" ariaCurrentWhenActive="page">
-      Appointments
-    </a>
-    <a routerLink="/doctors" routerLinkActive="active" ariaCurrentWhenActive="page">
-      Doctors
-    </a>
-    <a routerLink="/patients" routerLinkActive="active" ariaCurrentWhenActive="page">
-      Patients
-    </a>
-    <a routerLink="/specialties" routerLinkActive="active" ariaCurrentWhenActive="page">
-      Specialties
-    </a>
-    <a routerLink="/health-insurances" routerLinkActive="active" ariaCurrentWhenActive="page">
-      Health insurances
-    </a>
-  </nav>
+
+  @if (auth.currentSession(); as session) {
+    <nav aria-label="Main navigation">
+      <a routerLink="/appointments" routerLinkActive="active" ariaCurrentWhenActive="page">
+        {{ auth.isDoctor() ? 'My agenda' : 'Appointments' }}
+      </a>
+      @if (auth.isReceptionist()) {
+        <a routerLink="/doctors" routerLinkActive="active" ariaCurrentWhenActive="page">Doctors</a>
+        <a routerLink="/patients" routerLinkActive="active" ariaCurrentWhenActive="page">Patients</a>
+        <a routerLink="/specialties" routerLinkActive="active" ariaCurrentWhenActive="page">Specialties</a>
+        <a routerLink="/health-insurances" routerLinkActive="active" ariaCurrentWhenActive="page">
+          Health insurances
+        </a>
+        <a routerLink="/users" routerLinkActive="active" ariaCurrentWhenActive="page">Users</a>
+      }
+    </nav>
+
+    <div class="account">
+      <span class="account-email" [title]="session.email">{{ session.email }}</span>
+      <span class="tag">{{ session.role }}</span>
+      <button type="button" class="btn ghost" (click)="signOut()">Sign out</button>
+    </div>
+  }
 </header>
 
 <main class="app-main">

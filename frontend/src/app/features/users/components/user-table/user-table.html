@@ -1,0 +1,22 @@
+@if (users().length === 0) {
+  <p class="empty">No user accounts yet.</p>
+} @else {
+  <table>
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Doctor</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (user of users(); track user.id) {
+        <tr>
+          <td class="cell-title">{{ user.email }}</td>
+          <td><span class="tag">{{ user.role }}</span></td>
+          <td>{{ user.doctorName ?? '—' }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

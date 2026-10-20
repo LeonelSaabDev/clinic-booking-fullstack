@@ -61,3 +61,24 @@ nav a.active {
   margin: 0 auto;
   padding: clamp(2.5rem, 7vw, 4.5rem) clamp(1rem, 4vw, 3rem);
 }
+.account {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+.account-email {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .account-email {
+    display: none;
+  }
+}

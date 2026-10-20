@@ -1,0 +1,54 @@
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <div class="row">
+    <div class="field">
+      <label for="role">Role</label>
+      <select id="role" formControlName="role">
+        <option value="Doctor">Doctor</option>
+        <option value="Receptionist">Receptionist</option>
+      </select>
+    </div>
+
+    @if (isDoctorRole) {
+      <div class="field">
+        <label for="doctorId">Doctor</label>
+        <select id="doctorId" formControlName="doctorId">
+          <option value="" disabled>Select a doctor</option>
+          @for (doctor of availableDoctors(); track doctor.id) {
+            <option [value]="doctor.id">{{ doctor.lastName }}, {{ doctor.firstName }}</option>
+          }
+        </select>
+        @if (availableDoctors().length === 0) {
+          <span class="hint">Every doctor already has an account.</span>
+        } @else if (form.controls.doctorId.touched && form.errors?.['doctorRequired']) {
+          <span class="field-error">Choose the doctor this account belongs to.</span>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="off" formControlName="email" />
+      @if (form.controls.email.touched && form.controls.email.invalid) {
+        <span class="field-error">Enter a valid email address.</span>
+      }
+    </div>
+
+    <div class="field">
+      <label for="password">Initial password</label>
+      <input id="password" type="password" autocomplete="new-password" formControlName="password" />
+      @if (form.controls.password.touched && form.controls.password.invalid) {
+        <span class="field-error">Use at least {{ minPasswordLength }} characters. A short phrase works well.</span>
+      } @else {
+        <span class="hint">At least {{ minPasswordLength }} characters.</span>
+      }
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn" [disabled]="saving()">
+      {{ saving() ? 'Creating...' : 'Create account' }}
+    </button>
+  </div>
+</form>

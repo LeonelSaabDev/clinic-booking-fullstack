@@ -5,6 +5,7 @@ import { Router, RouterLink } from "@angular/router";
 import { Observable } from "rxjs";
 import { DoctorsApi } from "../../../doctors/data-access/doctors-api";
 import { HealthInsurancesApi } from "../../../health-insurances/data-access/health-insurances-api";
+import { AuthService } from "../../../../core/auth/auth.service";
 import { PatientsApi } from "../../../patients/data-access/patients-api";
 import { todayAsIsoDate } from "../../../../shared/clinic-time";
 import { AppointmentTable } from "../../components/appointment-table/appointment-table";
@@ -23,6 +24,10 @@ export class AppointmentListPage {
   private readonly patientsApi = inject(PatientsApi);
   private readonly healthInsurancesApi = inject(HealthInsurancesApi);
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
+
+  /** Doctors only see their own agenda; the API enforces it, the screen just hides what they can't use. */
+  protected readonly isDoctor = this.auth.isDoctor;
 
   /** Bound from the `?date=` query parameter, so a booking can return to the right day. */
   readonly date = input<string>();
@@ -58,7 +63,7 @@ export class AppointmentListPage {
       this.doctors.value() ?? [],
       this.patients.value() ?? [],
       this.healthInsurances.value() ?? [],
-    ),
+    ).map((row) => (this.isDoctor() ? { ...row, canCancel: false } : row)),
   );
 
   protected cancel(appointment: AppointmentRow): void {
