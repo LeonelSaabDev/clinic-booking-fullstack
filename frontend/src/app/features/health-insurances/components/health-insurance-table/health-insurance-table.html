@@ -1,0 +1,23 @@
+@if (healthInsurances().length === 0) {
+  <p>No health insurances yet.</p>
+} @else {
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th><span class="visually-hidden">Actions</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (healthInsurance of healthInsurances(); track healthInsurance.id) {
+        <tr>
+          <td>{{ healthInsurance.name }}</td>
+          <td>
+            <button type="button" (click)="rename.emit(healthInsurance)">Rename</button>
+            <button type="button" (click)="delete.emit(healthInsurance)">Delete</button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}
