@@ -1,1 +1,15 @@
-<router-outlet />
+<header class="app-header">
+  <a class="brand" routerLink="/">ClinicBooking</a>
+  <nav aria-label="Main navigation">
+    <a routerLink="/specialties" routerLinkActive="active" ariaCurrentWhenActive="page">
+      Specialties
+    </a>
+    <a routerLink="/health-insurances" routerLinkActive="active" ariaCurrentWhenActive="page">
+      Health insurances
+    </a>
+  </nav>
+</header>
+
+<main class="app-main">
+  <router-outlet />
+</main>
