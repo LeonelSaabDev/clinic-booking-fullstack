@@ -1,0 +1,17 @@
+<header class="page-header">
+  <div>
+    <p class="eyebrow">Medical staff</p>
+    <h1>Doctors</h1>
+  </div>
+  <a class="btn" routerLink="/doctors/new">New doctor</a>
+</header>
+
+<div class="card">
+  @if (isLoading()) {
+    <p class="empty">Loading doctors...</p>
+  } @else if (hasError()) {
+    <p class="empty">The doctors could not be loaded.</p>
+  } @else {
+    <app-doctor-table [doctors]="rows()" (edit)="editDoctor($event)" (delete)="deleteDoctor($event)" />
+  }
+</div>

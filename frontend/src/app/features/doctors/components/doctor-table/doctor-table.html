@@ -1,0 +1,38 @@
+@if (doctors().length === 0) {
+  <p class="empty">No doctors yet. Add the first one to start taking appointments.</p>
+} @else {
+  <table>
+    <thead>
+      <tr>
+        <th>Doctor</th>
+        <th>Specialty</th>
+        <th>Health insurances</th>
+        <th><span class="visually-hidden">Actions</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (doctor of doctors(); track doctor.id) {
+        <tr>
+          <td>
+            <span class="cell-title">{{ doctor.fullName }}</span>
+            <span class="cell-sub">{{ doctor.licenseNumber }}</span>
+          </td>
+          <td>{{ doctor.specialtyName }}</td>
+          <td>
+            @for (name of doctor.healthInsuranceNames; track name) {
+              <span class="tag">{{ name }}</span>
+            } @empty {
+              <span class="muted">Private only</span>
+            }
+          </td>
+          <td class="actions">
+            <button type="button" class="btn ghost" (click)="edit.emit(doctor)">Edit</button>
+            <button type="button" class="btn ghost danger" (click)="delete.emit(doctor)">
+              Delete
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

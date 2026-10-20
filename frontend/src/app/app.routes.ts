@@ -1,7 +1,28 @@
 import { Routes } from "@angular/router";
 
 export const routes: Routes = [
-  { path: "", pathMatch: "full", redirectTo: "specialties" },
+  { path: "", pathMatch: "full", redirectTo: "doctors" },
+  {
+    path: "doctors",
+    loadComponent: () =>
+      import("./features/doctors/pages/doctor-list-page/doctor-list-page").then(
+        (m) => m.DoctorListPage,
+      ),
+  },
+  {
+    path: "doctors/new",
+    loadComponent: () =>
+      import("./features/doctors/pages/doctor-form-page/doctor-form-page").then(
+        (m) => m.DoctorFormPage,
+      ),
+  },
+  {
+    path: "doctors/:id/edit",
+    loadComponent: () =>
+      import("./features/doctors/pages/doctor-form-page/doctor-form-page").then(
+        (m) => m.DoctorFormPage,
+      ),
+  },
   {
     path: "specialties",
     loadComponent: () =>
@@ -44,5 +65,5 @@ export const routes: Routes = [
         (m) => m.HealthInsuranceFormPage,
       ),
   },
-  { path: "**", redirectTo: "specialties" },
+  { path: "**", redirectTo: "doctors" },
 ];

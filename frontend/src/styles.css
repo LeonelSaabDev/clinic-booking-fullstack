@@ -253,6 +253,27 @@ tbody tr:hover {
   color: var(--ink-muted);
 }
 
+.cell-title {
+  display: block;
+  font-weight: 600;
+}
+
+.cell-sub {
+  display: block;
+  font-size: 13px;
+  color: var(--ink-subtle);
+}
+
+.tag {
+  display: inline-block;
+  margin: 0.125rem 0.375rem 0.125rem 0;
+  padding: 0.125rem 0.625rem;
+  font-size: 13px;
+  color: var(--ink-muted);
+  background: var(--surface-muted);
+  border-radius: 999px;
+}
+
 /* ---------- Forms ---------- */
 .field {
   display: grid;
@@ -276,7 +297,8 @@ label {
   color: var(--ink-subtle);
 }
 
-input {
+input:not([type="checkbox"]),
+select {
   width: 100%;
   height: 46px;
   padding: 0 0.875rem;
@@ -294,14 +316,72 @@ input::placeholder {
   color: var(--ink-subtle);
 }
 
-input:focus {
+input:not([type="checkbox"]):focus,
+select:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
-input.ng-invalid.ng-touched {
+input.ng-invalid.ng-touched,
+select.ng-invalid.ng-touched {
   border-color: var(--danger);
+}
+
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+legend {
+  margin-bottom: 0.5rem;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  font-weight: 500;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s;
+}
+
+.choice:hover {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+}
+
+.choice:has(input:checked) {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: transparent;
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--ink-subtle);
 }
 
 .field-error {
@@ -328,6 +408,13 @@ input.ng-invalid.ng-touched {
   background: var(--danger-soft);
   border-left: 3px solid var(--danger);
   border-radius: var(--radius-sm);
+}
+
+.notice {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+  color: var(--ink-muted);
 }
 
 /* ---------- Motion ---------- */

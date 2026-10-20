@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from "@angular/common/http";
 import { Component, inject } from "@angular/core";
 import { rxResource } from "@angular/core/rxjs-interop";
 import { Router, RouterLink } from "@angular/router";
@@ -29,8 +30,8 @@ export class SpecialtyListPage {
 
     this.api.delete(specialty.id).subscribe({
       next: () => this.specialties.reload(),
-      error: () =>
-        alert("The specialty could not be deleted. Please try again."),
+      error: (error: HttpErrorResponse) =>
+        alert(error.error?.detail ?? "The specialty could not be deleted. Please try again."),
     });
   }
 }

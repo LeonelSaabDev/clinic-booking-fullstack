@@ -1,0 +1,92 @@
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <div class="row">
+    <div class="field">
+      <label for="firstName">First name</label>
+      <input id="firstName" type="text" formControlName="firstName" placeholder="e.g. Ana" />
+      @if (form.controls.firstName.touched && form.controls.firstName.errors; as errors) {
+        @if (errors['required']) {
+          <span class="field-error">First name is required.</span>
+        }
+        @if (errors['maxlength']) {
+          <span class="field-error">First name cannot exceed {{ nameMaxLength }} characters.</span>
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="lastName">Last name</label>
+      <input id="lastName" type="text" formControlName="lastName" placeholder="e.g. García" />
+      @if (form.controls.lastName.touched && form.controls.lastName.errors; as errors) {
+        @if (errors['required']) {
+          <span class="field-error">Last name is required.</span>
+        }
+        @if (errors['maxlength']) {
+          <span class="field-error">Last name cannot exceed {{ nameMaxLength }} characters.</span>
+        }
+      }
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label for="licenseNumber">License number</label>
+      <input
+        id="licenseNumber"
+        type="text"
+        formControlName="licenseNumber"
+        placeholder="e.g. MN 12345"
+      />
+      @if (form.controls.licenseNumber.touched && form.controls.licenseNumber.errors; as errors) {
+        @if (errors['required']) {
+          <span class="field-error">License number is required.</span>
+        }
+        @if (errors['maxlength']) {
+          <span class="field-error">
+            License number cannot exceed {{ licenseNumberMaxLength }} characters.
+          </span>
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="specialtyId">Specialty</label>
+      <select id="specialtyId" formControlName="specialtyId">
+        <option value="" disabled>Select a specialty</option>
+        @for (specialty of specialties(); track specialty.id) {
+          <option [value]="specialty.id">{{ specialty.name }}</option>
+        }
+      </select>
+      @if (form.controls.specialtyId.touched && form.controls.specialtyId.errors?.['required']) {
+        <span class="field-error">Specialty is required.</span>
+      }
+    </div>
+  </div>
+
+  <fieldset class="field">
+    <legend>Accepted health insurances</legend>
+    @if (healthInsurances().length === 0) {
+      <p class="muted">There are no health insurances yet. This doctor will see private patients only.</p>
+    } @else {
+      <div class="choices">
+        @for (healthInsurance of healthInsurances(); track healthInsurance.id) {
+          <label class="choice">
+            <input
+              type="checkbox"
+              [checked]="isAccepted(healthInsurance.id)"
+              (change)="toggleHealthInsurance(healthInsurance.id, $any($event.target).checked)"
+            />
+            {{ healthInsurance.name }}
+          </label>
+        }
+      </div>
+      <p class="hint">Leave all unchecked if the doctor only sees private patients.</p>
+    }
+  </fieldset>
+
+  <div class="form-actions">
+    <button type="button" class="btn secondary" (click)="cancel.emit()">Cancel</button>
+    <button type="submit" class="btn" [disabled]="saving()">
+      {{ saving() ? 'Saving...' : 'Save doctor' }}
+    </button>
+  </div>
+</form>

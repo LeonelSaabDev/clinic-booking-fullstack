@@ -1,0 +1,39 @@
+<a class="back" routerLink="/doctors"><span aria-hidden="true">←</span> All doctors</a>
+
+<header class="page-header">
+  <div>
+    <p class="eyebrow">{{ isEditMode() ? 'Editing' : 'Medical staff' }}</p>
+    <h1>{{ isEditMode() ? 'Edit doctor' : 'New doctor' }}</h1>
+  </div>
+</header>
+
+<div class="card card-body">
+  @if (serverError(); as message) {
+    <div class="alert" role="alert">
+      <p>{{ message }}</p>
+    </div>
+  }
+
+  @if (loadFailed()) {
+    <div class="alert" role="alert">
+      <p>The doctor could not be loaded. It may have been deleted.</p>
+      <button type="button" class="btn secondary" (click)="cancel()">Back to doctors</button>
+    </div>
+  } @else if (!isReady()) {
+    <p class="muted">Loading...</p>
+  } @else if (specialties.value()!.length === 0) {
+    <div class="notice">
+      <p>A doctor needs a specialty, and there are none yet.</p>
+      <a class="btn secondary" routerLink="/specialties/new">Create a specialty first</a>
+    </div>
+  } @else {
+    <app-doctor-form
+      [doctor]="doctor.value()"
+      [specialties]="specialties.value()!"
+      [healthInsurances]="healthInsurances.value()!"
+      [saving]="saving()"
+      (save)="save($event)"
+      (cancel)="cancel()"
+    />
+  }
+</div>

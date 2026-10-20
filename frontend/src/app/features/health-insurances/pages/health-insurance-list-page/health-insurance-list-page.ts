@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from "@angular/common/http";
 import { Component, inject } from "@angular/core";
 import { rxResource } from "@angular/core/rxjs-interop";
 import { Router, RouterLink } from "@angular/router";
@@ -30,8 +31,8 @@ export class HealthInsuranceListPage {
 
     this.api.delete(healthInsurance.id).subscribe({
       next: () => this.healthInsurances.reload(),
-      error: () =>
-        alert("The health insurance could not be deleted. Please try again."),
+      error: (error: HttpErrorResponse) =>
+        alert(error.error?.detail ?? "The health insurance could not be deleted. Please try again."),
     });
   }
 }
