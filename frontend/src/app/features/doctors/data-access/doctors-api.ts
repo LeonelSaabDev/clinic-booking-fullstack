@@ -1,7 +1,8 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { inject, Service } from "@angular/core";
 import { Observable } from "rxjs";
 import { environment } from "../../../../environments/environment";
+import { AvailableSlot, DoctorSchedule } from "./doctor-schedule.model";
 import { Doctor, DoctorRequest } from "./doctor.model";
 
 @Service()
@@ -27,5 +28,19 @@ export class DoctorsApi {
 
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  }
+
+  getSchedule(id: string): Observable<DoctorSchedule> {
+    return this.http.get<DoctorSchedule>(`${this.baseUrl}/${id}/schedule`);
+  }
+
+  updateSchedule(id: string, schedule: DoctorSchedule): Observable<DoctorSchedule> {
+    return this.http.put<DoctorSchedule>(`${this.baseUrl}/${id}/schedule`, schedule);
+  }
+
+  /** @param date "yyyy-MM-dd" */
+  getAvailability(id: string, date: string): Observable<AvailableSlot[]> {
+    const params = new HttpParams().set("date", date);
+    return this.http.get<AvailableSlot[]>(`${this.baseUrl}/${id}/availability`, { params });
   }
 }

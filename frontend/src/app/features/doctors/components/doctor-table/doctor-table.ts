@@ -9,5 +9,6 @@ import { DoctorRow } from "../../data-access/doctor.model";
 export class DoctorTable {
   readonly doctors = input.required<DoctorRow[]>();
   readonly edit = output<DoctorRow>();
+  readonly schedule = output<DoctorRow>();
   readonly delete = output<DoctorRow>();
 }

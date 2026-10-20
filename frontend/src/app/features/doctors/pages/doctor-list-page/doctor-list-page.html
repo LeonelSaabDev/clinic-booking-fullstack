@@ -12,6 +12,7 @@
   } @else if (hasError()) {
     <p class="empty">The doctors could not be loaded.</p>
   } @else {
-    <app-doctor-table [doctors]="rows()" (edit)="editDoctor($event)" (delete)="deleteDoctor($event)" />
+    <app-doctor-table [doctors]="rows()" (schedule)="openSchedule($event)"
+      (edit)="editDoctor($event)" (delete)="deleteDoctor($event)" />
   }
 </div>

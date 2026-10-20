@@ -40,6 +40,10 @@ export class DoctorListPage {
     ),
   );
 
+  protected openSchedule(doctor: DoctorRow): void {
+    this.router.navigate(["/doctors", doctor.id, "schedule"]);
+  }
+
   protected editDoctor(doctor: DoctorRow): void {
     this.router.navigate(["/doctors", doctor.id, "edit"]);
   }

@@ -1,0 +1,76 @@
+<a class="back" routerLink="/doctors"><span aria-hidden="true">←</span> All doctors</a>
+
+<header class="page-header">
+  <div>
+    <p class="eyebrow">Schedule</p>
+    <h1>
+      @if (doctor.hasValue()) {
+        {{ doctor.value().firstName }} {{ doctor.value().lastName }}
+      } @else {
+        Doctor schedule
+      }
+    </h1>
+  </div>
+</header>
+
+@if (doctor.error() || schedule.error()) {
+  <div class="card card-body">
+    <div class="alert" role="alert">
+      <p>The schedule could not be loaded. The doctor may have been deleted.</p>
+      <button type="button" class="btn secondary" (click)="back()">Back to doctors</button>
+    </div>
+  </div>
+} @else {
+  <div class="layout">
+    <section class="card card-body" aria-labelledby="hours-title">
+      <h2 id="hours-title">Working hours</h2>
+
+      @if (serverError(); as message) {
+        <div class="alert" role="alert">
+          <p>{{ message }}</p>
+        </div>
+      }
+      @if (saved()) {
+        <p class="success" role="status">Schedule saved.</p>
+      }
+
+      @if (schedule.hasValue()) {
+        <app-schedule-editor
+          [schedule]="schedule.value()"
+          [saving]="saving()"
+          (save)="save($event)"
+          (cancel)="back()"
+        />
+      } @else {
+        <p class="muted">Loading schedule...</p>
+      }
+    </section>
+
+    <section class="card card-body" aria-labelledby="slots-title">
+      <div class="slots-header">
+        <h2 id="slots-title">Free slots</h2>
+        <input
+          type="date"
+          aria-label="Day to preview"
+          [value]="date()"
+          (change)="changeDate($any($event.target).value)"
+        />
+      </div>
+
+      @if (availability.isLoading()) {
+        <p class="muted">Loading free slots...</p>
+      } @else if (availability.error()) {
+        <p class="muted">The free slots could not be loaded.</p>
+      } @else if (availability.hasValue()) {
+        <ul class="slots">
+          @for (slot of availability.value(); track slot.startsAt) {
+            <li class="slot">{{ clinicTime(slot.startsAt) }}</li>
+          } @empty {
+            <li class="muted no-slots">No free slots on this day.</li>
+          }
+        </ul>
+      }
+      <p class="hint">Times are shown in clinic time. Past slots are hidden.</p>
+    </section>
+  </div>
+}

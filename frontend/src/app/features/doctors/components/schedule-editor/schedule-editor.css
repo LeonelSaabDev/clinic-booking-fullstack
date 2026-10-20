@@ -1,0 +1,43 @@
+form {
+  display: grid;
+  gap: 1.75rem;
+}
+
+fieldset {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.duration {
+  max-width: 260px;
+}
+
+.block {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.block-row {
+  display: grid;
+  grid-template-columns: minmax(130px, 1.4fr) minmax(110px, 1fr) auto minmax(110px, 1fr) auto;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.separator {
+  color: var(--ink-subtle);
+}
+
+@media (max-width: 640px) {
+  .block-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .block-row select {
+    grid-column: 1 / -1;
+  }
+
+  .separator {
+    display: none;
+  }
+}

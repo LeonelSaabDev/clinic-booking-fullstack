@@ -1,0 +1,47 @@
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <div class="field duration">
+    <label for="appointmentDuration">Appointment length</label>
+    <select id="appointmentDuration" formControlName="appointmentDurationMinutes">
+      @for (minutes of durations; track minutes) {
+        <option [ngValue]="minutes">{{ minutes }} minutes</option>
+      }
+    </select>
+  </div>
+
+  <fieldset class="field">
+    <legend>Weekly working hours</legend>
+
+    @for (block of form.controls.blocks.controls; track block; let i = $index) {
+      <div class="block" [formGroup]="block">
+        <div class="block-row">
+          <select formControlName="day" [attr.aria-label]="'Day of block ' + (i + 1)">
+            @for (day of days; track day) {
+              <option [value]="day">{{ day }}</option>
+            }
+          </select>
+          <input type="time" formControlName="start" [attr.aria-label]="'Start of block ' + (i + 1)" />
+          <span class="separator" aria-hidden="true">→</span>
+          <input type="time" formControlName="end" [attr.aria-label]="'End of block ' + (i + 1)" />
+          <button type="button" class="btn ghost danger" (click)="removeBlock(i)">Remove</button>
+        </div>
+        @if (block.touched && block.errors?.['endBeforeStart']) {
+          <span class="field-error">The block must end after it starts.</span>
+        }
+      </div>
+    } @empty {
+      <p class="muted">No working hours yet. Add a block to start offering appointments.</p>
+    }
+
+    <div>
+      <button type="button" class="btn secondary" (click)="addBlock()">Add block</button>
+    </div>
+    <p class="hint">Add two blocks on the same day for split shifts, for example 09:00–13:00 and 15:00–19:00.</p>
+  </fieldset>
+
+  <div class="form-actions">
+    <button type="button" class="btn secondary" (click)="cancel.emit()">Back</button>
+    <button type="submit" class="btn" [disabled]="saving()">
+      {{ saving() ? 'Saving...' : 'Save schedule' }}
+    </button>
+  </div>
+</form>

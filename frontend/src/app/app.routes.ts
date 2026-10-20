@@ -17,6 +17,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: "doctors/:id/schedule",
+    loadComponent: () =>
+      import("./features/doctors/pages/doctor-schedule-page/doctor-schedule-page").then(
+        (m) => m.DoctorSchedulePage,
+      ),
+  },
+  {
     path: "doctors/:id/edit",
     loadComponent: () =>
       import("./features/doctors/pages/doctor-form-page/doctor-form-page").then(

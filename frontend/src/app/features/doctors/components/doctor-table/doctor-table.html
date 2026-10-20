@@ -26,6 +26,7 @@
             }
           </td>
           <td class="actions">
+            <button type="button" class="btn ghost" (click)="schedule.emit(doctor)">Schedule</button>
             <button type="button" class="btn ghost" (click)="edit.emit(doctor)">Edit</button>
             <button type="button" class="btn ghost danger" (click)="delete.emit(doctor)">
               Delete
