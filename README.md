@@ -11,8 +11,9 @@ The front desk manages specialties, health insurances, doctors with weekly sched
 - **Double booking is impossible.** Two layers protect every slot: an application check that gives a clear message, and a filtered unique index in SQL Server as the final guard. A load test with 25 simultaneous requests per slot always produced exactly one booking and zero server errors.
 - **Real scheduling rules.** Weekly working hours with split shifts, a per-doctor appointment length, and free slots computed on the fly in the clinic's time zone.
 - **A full appointment lifecycle.** `Scheduled` → `Completed`, `NoShow` or `Cancelled` (with 24 hours of notice). A cancelled appointment frees its slot immediately.
+- **Role-based access with JWT.** The front desk manages everything; each doctor signs in to see only their own agenda. The API takes the doctor from the signed token, never from the request.
 - **Rich domain model.** Every rule lives in its entity; an invalid doctor, patient or appointment cannot exist.
-- **Built test first.** 162 backend tests (xUnit) and 63 frontend tests (Vitest), written with TDD.
+- **Built test first.** 185 backend tests (xUnit) and 82 frontend tests (Vitest), written with TDD.
 - **Modern Angular.** Standalone components, signals, `rxResource`, `linkedSignal`, typed reactive forms and lazy-loaded routes.
 - **Argentinian context.** Health insurances (*obras sociales*) with member numbers, DNI normalization and the `America/Argentina/Buenos_Aires` time zone.
 
@@ -20,7 +21,7 @@ The front desk manages specialties, health insurances, doctors with weekly sched
 
 | Layer | Technology |
 |-------|------------|
-| API | ASP.NET Core 10 (Minimal APIs), OpenAPI + [Scalar](https://scalar.com) |
+| API | ASP.NET Core 10 (Minimal APIs), JWT bearer authentication, OpenAPI + [Scalar](https://scalar.com) |
 | Persistence | Entity Framework Core 10, SQL Server |
 | Frontend | Angular 22, TypeScript, plain CSS with design tokens and dark mode |
 | Tests | xUnit + `FakeTimeProvider` (backend), Vitest + Angular TestBed (frontend) |
@@ -98,6 +99,19 @@ The index is **filtered** on purpose. A plain unique index would also block slot
 
 **Measured result:** 25 synchronized requests for each of 4 slots (100 in total) produced exactly 4 bookings, 96 conflicts and no `500`. In 52 of those conflicts the requests had already passed the application check, and only the database index stopped them.
 
+## Security
+
+| Concern | How it is handled |
+|---------|-------------------|
+| Passwords | Hashed with ASP.NET Core Identity's PBKDF2 hasher (random salt, many iterations), behind our own interface. At least 10 characters, no symbol rules. |
+| Sign-in errors | "Invalid email or password" for both an unknown email and a wrong password, so accounts can't be discovered. |
+| Tokens | JWT signed with HMAC-SHA256, valid for 1 hour. The signing key lives in User Secrets, never in the repository, and the API refuses to start without it. Only `HS256` is accepted. |
+| Authorization | Policies per role on every endpoint, plus a fallback policy: an endpoint someone forgets to protect still requires a signed-in user. |
+| Doctors' data | A doctor's id comes from the signed token. Asking for another doctor's agenda returns your own; another doctor's appointment answers `404`, so ids can't be probed. |
+| Frontend | Route guards and a role-aware menu shape the experience; the API remains the real protection. The token is attached only to calls to our own API, and a `401` signs the user out. |
+
+**Known trade-off:** the frontend keeps the token in `sessionStorage`, so it is lost when the tab closes. A script injected through an XSS flaw could read it; Angular escapes rendered content by default and the token expires in an hour, which is a reasonable balance for this project. An `HttpOnly` cookie would be safer, at the cost of CSRF protection and more moving parts.
+
 ## Architecture
 
 The backend follows Clean Architecture. Each layer has a single responsibility, and **dependencies always point inward**: the domain knows nothing about HTTP, EF Core or SQL Server.
@@ -156,6 +170,8 @@ The frontend is organized by feature (`appointments`, `doctors`, `patients`, `sp
 
 | Method | Route | Description |
 |--------|-------|-------------|
+| `POST` | `/api/auth/login` | Sign in and receive a JWT (the only public endpoint) |
+| `GET` `POST` | `/api/users` | User accounts (receptionists only) |
 | `GET` | `/api/appointments?date={yyyy-MM-dd}&doctorId={id}` | Appointments of a clinic day, optionally for one doctor |
 | `POST` | `/api/appointments` | Book an appointment (`409` if the slot is taken) |
 | `POST` | `/api/appointments/{id}/cancel` | Cancel (at least 24 hours in advance) |
@@ -167,6 +183,8 @@ The frontend is organized by feature (`appointments`, `doctors`, `patients`, `sp
 | `GET` `POST` `PUT` `DELETE` | `/api/patients?search={term}` | Patients, searchable by name or DNI |
 | `GET` `POST` `PUT` `DELETE` | `/api/specialties` | Specialties |
 | `GET` `POST` `PUT` `DELETE` | `/api/health-insurances` | Health insurances |
+
+Every endpoint except login needs `Authorization: Bearer <token>`. Reading is open to all staff; creating, editing and deleting are for receptionists. Doctors can only list and close their own appointments.
 
 Errors use the [Problem Details](https://www.rfc-editor.org/rfc/rfc9457) format, and the frontend shows the domain's own message:
 
@@ -194,7 +212,8 @@ Errors use the [Problem Details](https://www.rfc-editor.org/rfc/rfc9457) format,
 │       └── ClinicBooking.Application.Tests/
 ├── frontend/
 │   └── src/app/
-│       ├── features/                      # appointments, doctors, patients, specialties, health-insurances
+│       ├── core/auth/                     # Session, interceptor and route guards
+│       ├── features/                      # appointments, auth, doctors, patients, specialties, health-insurances, users
 │       └── shared/                        # Clinic time helpers
 └── docs/screenshots/
 ```
@@ -211,7 +230,9 @@ Errors use the [Problem Details](https://www.rfc-editor.org/rfc/rfc9457) format,
 
 ## Roadmap
 
-- [ ] Authentication and roles (JWT): front desk and doctors see different things
+- [x] Authentication and roles (JWT): front desk and doctors see different things
+- [ ] Refresh tokens, so sessions can outlive the one-hour access token
+- [ ] A patient portal to book appointments online
 - [ ] API integration tests against a real SQL Server (Testcontainers)
 - [ ] Docker Compose setup to run everything with one command
 - [ ] CI pipeline with GitHub Actions
