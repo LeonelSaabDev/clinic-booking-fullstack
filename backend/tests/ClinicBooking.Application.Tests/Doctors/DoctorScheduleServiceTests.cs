@@ -2,6 +2,7 @@
 using ClinicBooking.Application.Tests.Appointments;
 using ClinicBooking.Application.Tests.HealthInsurances;
 using ClinicBooking.Application.Tests.Specialties;
+using ClinicBooking.Application.Tests.Users;
 using ClinicBooking.Domain.Common;
 using ClinicBooking.Domain.Doctors;
 
@@ -16,7 +17,7 @@ public class DoctorScheduleServiceTests
     public DoctorScheduleServiceTests()
     {
         _doctors.Saved.Add(_doctor);
-        _service = new DoctorService(_doctors, new FakeSpecialtyRepository(), new FakeHealthInsuranceRepository(), new FakeAppointmentRepository());
+        _service = new DoctorService(_doctors, new FakeSpecialtyRepository(), new FakeHealthInsuranceRepository(), new FakeAppointmentRepository(), new FakeUserRepository());
     }
 
     [Fact]

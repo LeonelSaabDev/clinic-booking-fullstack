@@ -55,20 +55,24 @@ public sealed class AppointmentService(
     }
 
     public Task<AppointmentResponse?> CancelAsync(Guid id, CancellationToken cancellationToken) =>
-        ChangeStatusAsync(id, (appointment, now) => appointment.Cancel(now), cancellationToken);
+        ChangeStatusAsync(id, actingDoctorId: null, (appointment, now) => appointment.Cancel(now), cancellationToken);
 
-    public Task<AppointmentResponse?> CompleteAsync(Guid id, CancellationToken cancellationToken) =>
-        ChangeStatusAsync(id, (appointment, now) => appointment.Complete(now), cancellationToken);
+    /// <param name="actingDoctorId">Set when a doctor acts: they may only close their own appointments.</param>
+    public Task<AppointmentResponse?> CompleteAsync(Guid id, Guid? actingDoctorId, CancellationToken cancellationToken) =>
+        ChangeStatusAsync(id, actingDoctorId, (appointment, now) => appointment.Complete(now), cancellationToken);
 
-    public Task<AppointmentResponse?> MarkNoShowAsync(Guid id, CancellationToken cancellationToken) =>
-        ChangeStatusAsync(id, (appointment, now) => appointment.MarkNoShow(now), cancellationToken);
+    /// <param name="actingDoctorId">Set when a doctor acts: they may only close their own appointments.</param>
+    public Task<AppointmentResponse?> MarkNoShowAsync(Guid id, Guid? actingDoctorId, CancellationToken cancellationToken) =>
+        ChangeStatusAsync(id, actingDoctorId, (appointment, now) => appointment.MarkNoShow(now), cancellationToken);
 
     /// <summary>Loads, applies one domain transition and saves. The rules themselves live in <see cref="Appointment"/>.</summary>
     private async Task<AppointmentResponse?> ChangeStatusAsync(
-        Guid id, Action<Appointment, DateTimeOffset> transition, CancellationToken cancellationToken)
+        Guid id, Guid? actingDoctorId, Action<Appointment, DateTimeOffset> transition, CancellationToken cancellationToken)
     {
         var appointment = await appointments.GetByIdAsync(id, cancellationToken);
-        if (appointment is null)
+
+        // Another doctor's appointment answers exactly like a missing one, so ids can't be probed.
+        if (appointment is null || (actingDoctorId is not null && appointment.DoctorId != actingDoctorId))
             return null;
 
         transition(appointment, timeProvider.GetUtcNow());

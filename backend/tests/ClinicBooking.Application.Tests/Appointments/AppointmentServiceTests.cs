@@ -184,7 +184,7 @@ public class AppointmentServiceTests
         var booked = await _service.BookAsync(Request(_laura, At(9, 0)), CancellationToken.None);
         SetClinicNow(Date, 9, 10);
 
-        var completed = await _service.CompleteAsync(booked.Id, CancellationToken.None);
+        var completed = await _service.CompleteAsync(booked.Id, actingDoctorId: null, CancellationToken.None);
 
         Assert.Equal(AppointmentStatus.Completed, completed?.Status);
     }
@@ -195,7 +195,7 @@ public class AppointmentServiceTests
         var booked = await _service.BookAsync(Request(_laura, At(9, 0)), CancellationToken.None);
         SetClinicNow(Date, 9, 20);
 
-        var noShow = await _service.MarkNoShowAsync(booked.Id, CancellationToken.None);
+        var noShow = await _service.MarkNoShowAsync(booked.Id, actingDoctorId: null, CancellationToken.None);
 
         Assert.Equal(AppointmentStatus.NoShow, noShow?.Status);
     }
@@ -204,5 +204,28 @@ public class AppointmentServiceTests
     public async Task CancelAsync_WhenAppointmentDoesNotExist_ReturnsNull()
     {
         Assert.Null(await _service.CancelAsync(Guid.NewGuid(), CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task CompleteAsync_ByTheAppointmentDoctor_CompletesIt()
+    {
+        var booked = await _service.BookAsync(Request(_laura, At(9, 0)), CancellationToken.None);
+        SetClinicNow(Date, 9, 10);
+
+        var completed = await _service.CompleteAsync(booked.Id, actingDoctorId: _ana.Id, CancellationToken.None);
+
+        Assert.Equal(AppointmentStatus.Completed, completed?.Status);
+    }
+
+    [Fact]
+    public async Task CompleteAsync_ByAnotherDoctor_BehavesAsIfTheAppointmentDidNotExist()
+    {
+        var booked = await _service.BookAsync(Request(_laura, At(9, 0)), CancellationToken.None);
+        SetClinicNow(Date, 9, 10);
+
+        var result = await _service.CompleteAsync(booked.Id, actingDoctorId: Guid.NewGuid(), CancellationToken.None);
+
+        Assert.Null(result);
+        Assert.Equal(AppointmentStatus.Scheduled, Assert.Single(_appointments.Saved).Status);
     }
 }

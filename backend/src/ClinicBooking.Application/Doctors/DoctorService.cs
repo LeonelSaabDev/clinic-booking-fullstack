@@ -2,6 +2,7 @@
 using ClinicBooking.Application.Common;
 using ClinicBooking.Application.HealthInsurances;
 using ClinicBooking.Application.Specialties;
+using ClinicBooking.Application.Users;
 using ClinicBooking.Domain.Doctors;
 
 namespace ClinicBooking.Application.Doctors;
@@ -10,7 +11,8 @@ public sealed class DoctorService(
     IDoctorRepository doctors,
     ISpecialtyRepository specialties,
     IHealthInsuranceRepository healthInsurances,
-    IAppointmentRepository appointments)
+    IAppointmentRepository appointments,
+    IUserRepository users)
 {
     public async Task<IReadOnlyList<DoctorResponse>> GetAllAsync(CancellationToken cancellationToken)
     {
@@ -84,6 +86,9 @@ public sealed class DoctorService(
 
         if (await appointments.ExistsByDoctorAsync(doctor.Id, cancellationToken))
             throw new ConflictException("This doctor cannot be deleted because they have appointments.");
+
+        if (await users.ExistsByDoctorAsync(doctor.Id, cancellationToken))
+            throw new ConflictException("This doctor cannot be deleted because they have a user account.");
 
         doctors.Remove(doctor);
         await doctors.SaveChangesAsync(cancellationToken);
