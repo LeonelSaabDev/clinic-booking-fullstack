@@ -31,6 +31,27 @@ export const routes: Routes = [
       ),
   },
   {
+    path: "patients",
+    loadComponent: () =>
+      import("./features/patients/pages/patient-list-page/patient-list-page").then(
+        (m) => m.PatientListPage,
+      ),
+  },
+  {
+    path: "patients/new",
+    loadComponent: () =>
+      import("./features/patients/pages/patient-form-page/patient-form-page").then(
+        (m) => m.PatientFormPage,
+      ),
+  },
+  {
+    path: "patients/:id/edit",
+    loadComponent: () =>
+      import("./features/patients/pages/patient-form-page/patient-form-page").then(
+        (m) => m.PatientFormPage,
+      ),
+  },
+  {
     path: "specialties",
     loadComponent: () =>
       import("./features/specialties/pages/specialty-list-page/specialty-list-page").then(

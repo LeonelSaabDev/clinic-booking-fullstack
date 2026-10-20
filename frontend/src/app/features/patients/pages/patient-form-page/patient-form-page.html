@@ -1,0 +1,33 @@
+<a class="back" routerLink="/patients"><span aria-hidden="true">←</span> All patients</a>
+
+<header class="page-header">
+  <div>
+    <p class="eyebrow">{{ isEditMode() ? 'Editing' : 'Front desk' }}</p>
+    <h1>{{ isEditMode() ? 'Edit patient' : 'New patient' }}</h1>
+  </div>
+</header>
+
+<div class="card card-body">
+  @if (serverError(); as message) {
+    <div class="alert" role="alert">
+      <p>{{ message }}</p>
+    </div>
+  }
+
+  @if (loadFailed()) {
+    <div class="alert" role="alert">
+      <p>The patient could not be loaded. It may have been deleted.</p>
+      <button type="button" class="btn secondary" (click)="cancel()">Back to patients</button>
+    </div>
+  } @else if (!isReady()) {
+    <p class="muted">Loading...</p>
+  } @else {
+    <app-patient-form
+      [patient]="patient.value()"
+      [healthInsurances]="healthInsurances.value()!"
+      [saving]="saving()"
+      (save)="save($event)"
+      (cancel)="cancel()"
+    />
+  }
+</div>

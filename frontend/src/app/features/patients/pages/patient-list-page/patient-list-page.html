@@ -1,0 +1,28 @@
+<header class="page-header">
+  <div>
+    <p class="eyebrow">Front desk</p>
+    <h1>Patients</h1>
+  </div>
+  <a class="btn" routerLink="/patients/new">New patient</a>
+</header>
+
+<form class="search" role="search" (submit)="$event.preventDefault(); search(term.value)">
+  <input
+    #term
+    type="search"
+    aria-label="Search patients"
+    placeholder="Search by name or DNI"
+    [value]="searchTerm()"
+  />
+  <button type="submit" class="btn secondary">Search</button>
+</form>
+
+<div class="card">
+  @if (isLoading()) {
+    <p class="empty">Loading patients...</p>
+  } @else if (hasError()) {
+    <p class="empty">The patients could not be loaded.</p>
+  } @else {
+    <app-patient-table [patients]="rows()" (edit)="editPatient($event)" (delete)="deletePatient($event)" />
+  }
+</div>

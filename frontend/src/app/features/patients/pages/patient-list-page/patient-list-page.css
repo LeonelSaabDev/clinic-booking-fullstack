@@ -1,0 +1,9 @@
+.search {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.search .btn {
+  height: 46px;
+}

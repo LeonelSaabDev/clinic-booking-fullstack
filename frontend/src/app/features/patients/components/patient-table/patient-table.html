@@ -1,0 +1,41 @@
+@if (patients().length === 0) {
+  <p class="empty">No patients found. Try another search, or register a new patient.</p>
+} @else {
+  <table>
+    <thead>
+      <tr>
+        <th>Patient</th>
+        <th>Contact</th>
+        <th>Coverage</th>
+        <th><span class="visually-hidden">Actions</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (patient of patients(); track patient.id) {
+        <tr>
+          <td>
+            <span class="cell-title">{{ patient.fullName }}</span>
+            <span class="cell-sub">DNI {{ patient.documentNumber }}</span>
+          </td>
+          <td>
+            <span>{{ patient.email }}</span>
+            <span class="cell-sub">{{ patient.phone }}</span>
+          </td>
+          <td>
+            @if (patient.coverage; as coverage) {
+              <span class="tag">{{ coverage }}</span>
+            } @else {
+              <span class="muted">Private</span>
+            }
+          </td>
+          <td class="actions">
+            <button type="button" class="btn ghost" (click)="edit.emit(patient)">Edit</button>
+            <button type="button" class="btn ghost danger" (click)="delete.emit(patient)">
+              Delete
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

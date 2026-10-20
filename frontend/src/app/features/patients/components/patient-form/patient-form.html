@@ -1,0 +1,88 @@
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <div class="row">
+    <div class="field">
+      <label for="firstName">First name</label>
+      <input id="firstName" type="text" formControlName="firstName" placeholder="e.g. Juan" />
+      @if (form.controls.firstName.touched && form.controls.firstName.errors?.['required']) {
+        <span class="field-error">First name is required.</span>
+      }
+    </div>
+
+    <div class="field">
+      <label for="lastName">Last name</label>
+      <input id="lastName" type="text" formControlName="lastName" placeholder="e.g. Pérez" />
+      @if (form.controls.lastName.touched && form.controls.lastName.errors?.['required']) {
+        <span class="field-error">Last name is required.</span>
+      }
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label for="documentNumber">DNI</label>
+      <input
+        id="documentNumber"
+        type="text"
+        inputmode="numeric"
+        formControlName="documentNumber"
+        placeholder="e.g. 30.123.456"
+      />
+      @if (form.controls.documentNumber.touched && form.controls.documentNumber.errors; as errors) {
+        @if (errors['required']) {
+          <span class="field-error">DNI is required.</span>
+        } @else {
+          <span class="field-error">Enter between 6 and 10 digits. Dots are fine.</span>
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="phone">Phone</label>
+      <input id="phone" type="tel" formControlName="phone" placeholder="e.g. 11 5555-1234" />
+      @if (form.controls.phone.touched && form.controls.phone.errors?.['required']) {
+        <span class="field-error">Phone is required.</span>
+      }
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="email">Email</label>
+    <input id="email" type="email" formControlName="email" placeholder="e.g. juan@mail.com" />
+    @if (form.controls.email.touched && form.controls.email.errors; as errors) {
+      @if (errors['required']) {
+        <span class="field-error">Email is required.</span>
+      } @else {
+        <span class="field-error">Enter a valid email address.</span>
+      }
+    }
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label for="healthInsuranceId">Health insurance</label>
+      <select id="healthInsuranceId" formControlName="healthInsuranceId">
+        <option value="">Private (no health insurance)</option>
+        @for (healthInsurance of healthInsurances(); track healthInsurance.id) {
+          <option [value]="healthInsurance.id">{{ healthInsurance.name }}</option>
+        }
+      </select>
+    </div>
+
+    @if (isInsured) {
+      <div class="field">
+        <label for="memberNumber">Member number</label>
+        <input id="memberNumber" type="text" formControlName="memberNumber" placeholder="e.g. 210-555" />
+        @if (form.controls.memberNumber.touched && form.errors?.['memberNumberRequired']) {
+          <span class="field-error">Member number is required for patients with health insurance.</span>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="form-actions">
+    <button type="button" class="btn secondary" (click)="cancel.emit()">Cancel</button>
+    <button type="submit" class="btn" [disabled]="saving()">
+      {{ saving() ? 'Saving...' : 'Save patient' }}
+    </button>
+  </div>
+</form>
