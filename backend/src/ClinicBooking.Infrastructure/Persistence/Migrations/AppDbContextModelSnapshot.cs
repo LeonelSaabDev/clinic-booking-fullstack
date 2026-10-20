@@ -27,6 +27,9 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("AppointmentDurationMinutes")
+                        .HasColumnType("int");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -123,7 +126,32 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                                 .IsRequired();
                         });
 
+                    b.OwnsMany("ClinicBooking.Domain.Doctors.ScheduleBlock", "WeeklySchedule", b1 =>
+                        {
+                            b1.Property<Guid>("DoctorId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("Day")
+                                .HasMaxLength(9)
+                                .HasColumnType("nvarchar(9)");
+
+                            b1.Property<TimeOnly>("Start")
+                                .HasColumnType("time");
+
+                            b1.Property<TimeOnly>("End")
+                                .HasColumnType("time");
+
+                            b1.HasKey("DoctorId", "Day", "Start");
+
+                            b1.ToTable("DoctorScheduleBlocks", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("DoctorId");
+                        });
+
                     b.Navigation("AcceptedHealthInsurances");
+
+                    b.Navigation("WeeklySchedule");
                 });
 #pragma warning restore 612, 618
         }

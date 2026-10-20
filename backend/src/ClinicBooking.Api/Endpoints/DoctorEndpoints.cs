@@ -1,3 +1,4 @@
+using ClinicBooking.Application.Availability;
 using ClinicBooking.Application.Doctors;
 using Microsoft.AspNetCore.Http.HttpResults;
 
@@ -15,7 +16,32 @@ public static class DoctorEndpoints
         group.MapPut("/{id:guid}", UpdateDoctor);
         group.MapDelete("/{id:guid}", DeleteDoctor);
 
+        group.MapGet("/{id:guid}/schedule", GetDoctorSchedule);
+        group.MapPut("/{id:guid}/schedule", UpdateDoctorSchedule);
+        group.MapGet("/{id:guid}/availability", GetDoctorAvailability);
+
         return app;
+    }
+
+    private static async Task<Results<Ok<DoctorScheduleResponse>, NotFound>> GetDoctorSchedule(
+        Guid id, DoctorService service, CancellationToken cancellationToken)
+    {
+        var schedule = await service.GetScheduleAsync(id, cancellationToken);
+        return schedule is null ? TypedResults.NotFound() : TypedResults.Ok(schedule);
+    }
+
+    private static async Task<Results<Ok<DoctorScheduleResponse>, NotFound>> UpdateDoctorSchedule(
+        Guid id, UpdateDoctorScheduleRequest request, DoctorService service, CancellationToken cancellationToken)
+    {
+        var schedule = await service.UpdateScheduleAsync(id, request, cancellationToken);
+        return schedule is null ? TypedResults.NotFound() : TypedResults.Ok(schedule);
+    }
+
+    private static async Task<Results<Ok<IReadOnlyList<AvailableSlotResponse>>, NotFound>> GetDoctorAvailability(
+        Guid id, DateOnly date, AvailabilityService service, CancellationToken cancellationToken)
+    {
+        var slots = await service.GetAvailableSlotsAsync(id, date, cancellationToken);
+        return slots is null ? TypedResults.NotFound() : TypedResults.Ok(slots);
     }
 
     private static async Task<Ok<IReadOnlyList<DoctorResponse>>> GetAllDoctors(

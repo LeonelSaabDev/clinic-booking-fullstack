@@ -3,10 +3,14 @@ using ClinicBooking.Infrastructure;
 using ClinicBooking.Api.Endpoints;
 using Scalar.AspNetCore;
 using ClinicBooking.Api.ErrorHandling;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<KnownExceptionHandler>();

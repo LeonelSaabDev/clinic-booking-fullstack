@@ -27,6 +27,8 @@ internal sealed class DoctorConfiguration : IEntityTypeConfiguration<Doctor>
 
         builder.HasIndex(d => d.LicenseNumber).IsUnique();
 
+        builder.Property(d => d.AppointmentDurationMinutes).IsRequired();
+
         builder.HasOne<Specialty>()
             .WithMany()
             .HasForeignKey(d => d.SpecialtyId)
@@ -42,6 +44,19 @@ internal sealed class DoctorConfiguration : IEntityTypeConfiguration<Doctor>
                 .WithMany()
                 .HasForeignKey(a => a.HealthInsuranceId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.OwnsMany(d => d.WeeklySchedule, block =>
+        {
+            block.ToTable("DoctorScheduleBlocks");
+            block.WithOwner().HasForeignKey("DoctorId");
+
+            block.Property(b => b.Day)
+                .HasConversion<string>()
+                .HasMaxLength(9);
+
+            // Blocks of the same doctor and day never overlap, so they never share a start time.
+            block.HasKey("DoctorId", nameof(ScheduleBlock.Day), nameof(ScheduleBlock.Start));
         });
     }
 }
