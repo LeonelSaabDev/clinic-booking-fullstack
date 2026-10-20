@@ -43,19 +43,3 @@ export interface AvailableSlot {
 export function toInputTime(time: string): string {
   return time.slice(0, 5);
 }
-
-/**
- * Reads the time straight from the ISO string instead of converting it with Date,
- * so slots always show in clinic time, whatever the viewer's own time zone is.
- */
-export function toClinicTime(instant: string): string {
-  return instant.slice(11, 16);
-}
-
-/** Tomorrow as "yyyy-MM-dd" in the viewer's local calendar. */
-export function tomorrowAsIsoDate(today = new Date()): string {
-  const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-  const month = String(tomorrow.getMonth() + 1).padStart(2, "0");
-  const day = String(tomorrow.getDate()).padStart(2, "0");
-  return `${tomorrow.getFullYear()}-${month}-${day}`;
-}

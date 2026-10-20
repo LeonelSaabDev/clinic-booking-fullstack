@@ -3,11 +3,8 @@ import { Component, inject, input, signal } from "@angular/core";
 import { rxResource } from "@angular/core/rxjs-interop";
 import { Router, RouterLink } from "@angular/router";
 import { ScheduleEditor } from "../../components/schedule-editor/schedule-editor";
-import {
-  DoctorSchedule,
-  toClinicTime,
-  tomorrowAsIsoDate,
-} from "../../data-access/doctor-schedule.model";
+import { toClinicTime, tomorrowAsIsoDate } from "../../../../shared/clinic-time";
+import { DoctorSchedule } from "../../data-access/doctor-schedule.model";
 import { DoctorsApi } from "../../data-access/doctors-api";
 
 @Component({
