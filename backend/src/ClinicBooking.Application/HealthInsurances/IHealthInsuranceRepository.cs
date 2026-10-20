@@ -7,6 +7,7 @@ public interface IHealthInsuranceRepository
     Task<IReadOnlyList<HealthInsurance>> GetAllAsync(CancellationToken cancellationToken);
     Task<HealthInsurance?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
     Task<bool> ExistsByNameAsync(string name, Guid? excludedId, CancellationToken cancellationToken);
+    Task<bool> AllExistAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken);
     void Add(HealthInsurance healthInsurance);
     void Remove(HealthInsurance healthInsurance);
     Task SaveChangesAsync(CancellationToken cancellationToken);

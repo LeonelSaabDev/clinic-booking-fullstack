@@ -1,5 +1,7 @@
 ﻿using ClinicBooking.Application.Common;
 using ClinicBooking.Application.Specialties;
+using ClinicBooking.Application.Tests.Doctors;
+using ClinicBooking.Domain.Doctors;
 using ClinicBooking.Domain.Specialties;
 
 namespace ClinicBooking.Application.Tests.Specialties;
@@ -7,12 +9,12 @@ namespace ClinicBooking.Application.Tests.Specialties;
 public class SpecialtyServiceTests
 {
     private readonly FakeSpecialtyRepository _repository = new();
-
+    private readonly FakeDoctorRepository _doctors = new();
     private readonly SpecialtyService _service;
 
     public SpecialtyServiceTests()
     {
-        _service = new SpecialtyService(_repository);
+        _service = new SpecialtyService(_repository, _doctors);
     }
 
     [Fact]
@@ -160,5 +162,17 @@ public class SpecialtyServiceTests
         var deleted = await _service.DeleteAsync(Guid.NewGuid(), CancellationToken.None);
 
         Assert.False(deleted);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenSpecialtyHasDoctors_ThrowsConflictException()
+    {
+        var cardiology = Specialty.Create("Cardiology");
+        _repository.Saved.Add(cardiology);
+        _doctors.Saved.Add(Doctor.Create("Ana", "García", "MN 12345", cardiology.Id));
+
+        await Assert.ThrowsAsync<ConflictException>(
+            () => _service.DeleteAsync(cardiology.Id, CancellationToken.None));
+        Assert.Single(_repository.Saved);
     }
 }

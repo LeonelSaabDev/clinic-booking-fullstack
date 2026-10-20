@@ -1,9 +1,10 @@
 ﻿using ClinicBooking.Application.Common;
+using ClinicBooking.Application.Doctors;
 using ClinicBooking.Domain.HealthInsurances;
 
 namespace ClinicBooking.Application.HealthInsurances;
 
-public sealed class HealthInsuranceService(IHealthInsuranceRepository repository)
+public sealed class HealthInsuranceService(IHealthInsuranceRepository repository, IDoctorRepository doctors)
 {
     public async Task<IReadOnlyList<HealthInsuranceResponse>> GetAllAsync(CancellationToken cancellationToken)
     {
@@ -51,6 +52,9 @@ public sealed class HealthInsuranceService(IHealthInsuranceRepository repository
         var healthInsurance = await repository.GetByIdAsync(id, cancellationToken);
         if (healthInsurance is null)
             return false;
+
+        if (await doctors.ExistsByHealthInsuranceAsync(healthInsurance.Id, cancellationToken))
+            throw new ConflictException($"'{healthInsurance.Name}' cannot be deleted because doctors accept it.");
 
         repository.Remove(healthInsurance);
         await repository.SaveChangesAsync(cancellationToken);

@@ -1,9 +1,10 @@
 ﻿using ClinicBooking.Application.Common;
+using ClinicBooking.Application.Doctors;
 using ClinicBooking.Domain.Specialties;
 
 namespace ClinicBooking.Application.Specialties;
 
-public sealed class SpecialtyService(ISpecialtyRepository repository)
+public sealed class SpecialtyService(ISpecialtyRepository repository, IDoctorRepository doctors)
 {
     public async Task<IReadOnlyList<SpecialtyResponse>> GetAllAsync(CancellationToken cancellationToken)
     {
@@ -51,6 +52,9 @@ public sealed class SpecialtyService(ISpecialtyRepository repository)
         var specialty = await repository.GetByIdAsync(id, cancellationToken);
         if (specialty is null)
             return false;
+
+        if (await doctors.ExistsBySpecialtyAsync(specialty.Id, cancellationToken))
+            throw new ConflictException($"'{specialty.Name}' cannot be deleted because it has doctors assigned.");
 
         repository.Remove(specialty);
         await repository.SaveChangesAsync(cancellationToken);

@@ -20,6 +20,9 @@ internal sealed class FakeHealthInsuranceRepository : IHealthInsuranceRepository
             h.Id != excludedId &&
             string.Equals(h.Name, name, StringComparison.OrdinalIgnoreCase)));
 
+    public Task<bool> AllExistAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken) =>
+        Task.FromResult(ids.All(id => Saved.Any(h => h.Id == id)));
+
     public void Add(HealthInsurance healthInsurance) => _pending.Add(healthInsurance);
 
     public void Remove(HealthInsurance healthInsurance) => Saved.Remove(healthInsurance);
