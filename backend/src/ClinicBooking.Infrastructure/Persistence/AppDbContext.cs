@@ -1,4 +1,5 @@
-﻿using ClinicBooking.Domain.Doctors;
+﻿using ClinicBooking.Domain.Appointments;
+using ClinicBooking.Domain.Doctors;
 using ClinicBooking.Domain.HealthInsurances;
 using ClinicBooking.Domain.Patients;
 using ClinicBooking.Domain.Specialties;
@@ -15,6 +16,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<Doctor> Doctors => Set<Doctor>();
 
     public DbSet<Patient> Patients => Set<Patient>();
+
+    public DbSet<Appointment> Appointments => Set<Appointment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);

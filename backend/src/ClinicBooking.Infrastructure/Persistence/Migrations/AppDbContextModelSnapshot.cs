@@ -22,6 +22,49 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("ClinicBooking.Domain.Appointments.Appointment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("DoctorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("EndsAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("HealthInsuranceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("MemberNumber")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("StartsAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StartsAt");
+
+                    b.HasIndex("DoctorId", "StartsAt")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Appointments_DoctorId_StartsAt_Scheduled")
+                        .HasFilter("[Status] = N'Scheduled'");
+
+                    b.HasIndex("PatientId", "StartsAt");
+
+                    b.ToTable("Appointments");
+                });
+
             modelBuilder.Entity("ClinicBooking.Domain.Doctors.Doctor", b =>
                 {
                     b.Property<Guid>("Id")
@@ -139,6 +182,21 @@ namespace ClinicBooking.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Specialties");
+                });
+
+            modelBuilder.Entity("ClinicBooking.Domain.Appointments.Appointment", b =>
+                {
+                    b.HasOne("ClinicBooking.Domain.Doctors.Doctor", null)
+                        .WithMany()
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ClinicBooking.Domain.Patients.Patient", null)
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ClinicBooking.Domain.Doctors.Doctor", b =>

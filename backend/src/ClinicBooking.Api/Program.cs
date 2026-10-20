@@ -45,6 +45,7 @@ app.MapSpecialtyEndpoints();
 app.MapHealthInsuranceEndpoints();
 app.MapDoctorEndpoints();
 app.MapPatientEndpoints();
+app.MapAppointmentEndpoints();
 
 app.Run();
 
