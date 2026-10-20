@@ -1,5 +1,4 @@
-using System.Net.Mail;
-using ClinicBooking.Domain.Common;
+﻿using ClinicBooking.Domain.Common;
 
 namespace ClinicBooking.Domain.Patients;
 
@@ -8,7 +7,7 @@ public sealed class Patient
     public const int NameMaxLength = 100;
     public const int DocumentNumberMinLength = 6;
     public const int DocumentNumberMaxLength = 10;
-    public const int EmailMaxLength = 254;
+    public const int EmailMaxLength = EmailAddress.MaxLength;
     public const int PhoneMaxLength = 30;
     public const int MemberNumberMaxLength = 30;
 
@@ -35,7 +34,7 @@ public sealed class Patient
         var trimmedFirstName = Required(firstName, "Patient first name", NameMaxLength);
         var trimmedLastName = Required(lastName, "Patient last name", NameMaxLength);
         var normalizedDocument = NormalizeDocumentNumber(documentNumber);
-        var normalizedEmail = NormalizeEmail(email);
+        var normalizedEmail = EmailAddress.Normalize(email, "Patient email");
         var trimmedPhone = NormalizePhone(phone);
 
         FirstName = trimmedFirstName;
@@ -78,17 +77,6 @@ public sealed class Patient
                 $"Patient document number must have between {DocumentNumberMinLength} and {DocumentNumberMaxLength} digits.");
 
         return compact;
-    }
-
-    private static string NormalizeEmail(string email)
-    {
-        var trimmedEmail = Required(email, "Patient email", EmailMaxLength).ToLowerInvariant();
-
-        if (!MailAddress.TryCreate(trimmedEmail, out var address) || address.Address != trimmedEmail ||
-            !address.Host.Contains('.'))
-            throw new DomainException("Patient email is not valid.");
-
-        return trimmedEmail;
     }
 
     private static string NormalizePhone(string phone)
