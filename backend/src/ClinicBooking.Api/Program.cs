@@ -5,6 +5,8 @@ using ClinicBooking.Application;
 using ClinicBooking.Application.Users;
 using ClinicBooking.Domain.Users;
 using ClinicBooking.Infrastructure;
+using ClinicBooking.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using System.Text.Json.Serialization;
 
@@ -32,6 +34,16 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod()));
 
 var app = builder.Build();
+
+// One-off command to create or upgrade the database schema, used by Docker Compose before the API starts:
+// dotnet ClinicBooking.Api.dll migrate
+if (args is ["migrate"])
+{
+    using var scope = app.Services.CreateScope();
+    await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
+    Console.WriteLine("Database is up to date.");
+    return;
+}
 
 // One-off command to create the first account, since only a receptionist can create the others:
 // dotnet run --project backend/src/ClinicBooking.Api -- create-receptionist <email> <password>
