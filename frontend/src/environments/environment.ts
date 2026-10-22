@@ -1,3 +1,4 @@
 export const environment = {
-  apiUrl: "http://localhost:5254/api",
+  // Relative on purpose: in production the web server that serves the app also proxies /api to the backend.
+  apiUrl: "/api",
 };
