@@ -1,0 +1,55 @@
+# The whole system with one command: docker compose up --build
+# Secrets come from a .env file next to this one (copy .env.example).
+name: clinicbooking
+
+x-api-environment: &api-environment
+  ConnectionStrings__ClinicBookingDb: Server=db;Database=ClinicBookingDb;User Id=sa;Password=${SQL_SA_PASSWORD};TrustServerCertificate=True
+  Jwt__SigningKey: ${JWT_SIGNING_KEY:?Set JWT_SIGNING_KEY in .env}
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${SQL_SA_PASSWORD:?Set SQL_SA_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:14330:1433" # Only from this machine, for SSMS / Azure Data Studio.
+    volumes:
+      - sqldata:/var/opt/mssql # The data survives "docker compose down".
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -Q "SELECT 1" -b -o /dev/null
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  # Runs once and exits: creates or upgrades the schema before the API starts.
+  migrate:
+    build: ./backend
+    image: clinicbooking-api
+    command: ["migrate"]
+    environment: *api-environment
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    build: ./backend
+    image: clinicbooking-api
+    environment: *api-environment
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    build: ./frontend
+    image: clinicbooking-web
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    depends_on:
+      - api
+
+volumes:
+  sqldata:
