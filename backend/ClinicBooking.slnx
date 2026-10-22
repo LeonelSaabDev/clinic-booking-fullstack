@@ -6,6 +6,7 @@
     <Project Path="src/ClinicBooking.Infrastructure/ClinicBooking.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/ClinicBooking.Api.IntegrationTests/ClinicBooking.Api.IntegrationTests.csproj" />
     <Project Path="tests/ClinicBooking.Application.Tests/ClinicBooking.Application.Tests.csproj" />
     <Project Path="tests/ClinicBooking.Domain.Tests/ClinicBooking.Domain.Tests.csproj" />
   </Folder>

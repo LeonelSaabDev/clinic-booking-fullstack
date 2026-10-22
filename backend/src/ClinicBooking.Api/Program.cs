@@ -68,3 +68,6 @@ app.MapPatientEndpoints();
 app.MapAppointmentEndpoints();
 
 app.Run();
+
+/// <summary>Visible to the integration tests, which host the whole API in memory with WebApplicationFactory.</summary>
+public partial class Program;
