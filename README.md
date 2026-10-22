@@ -1,5 +1,7 @@
 # ClinicBooking
 
+[![CI](https://github.com/LeonelSaabDev/clinic-booking-fullstack/actions/workflows/ci.yml/badge.svg)](https://github.com/LeonelSaabDev/clinic-booking-fullstack/actions/workflows/ci.yml)
+
 **Medical appointment booking for a clinic, built with ASP.NET Core 10, Clean Architecture, SQL Server and Angular 22.**
 
 The front desk manages specialties, health insurances, doctors with weekly schedules and patients, then books appointments that can never be double-booked, even when two people click on the same slot at the same time.
@@ -13,7 +15,8 @@ The front desk manages specialties, health insurances, doctors with weekly sched
 - **A full appointment lifecycle.** `Scheduled` → `Completed`, `NoShow` or `Cancelled` (with 24 hours of notice). A cancelled appointment frees its slot immediately.
 - **Role-based access with JWT.** The front desk manages everything; each doctor signs in to see only their own agenda. The API takes the doctor from the signed token, never from the request.
 - **Rich domain model.** Every rule lives in its entity; an invalid doctor, patient or appointment cannot exist.
-- **Built test first.** 185 backend tests (xUnit) and 82 frontend tests (Vitest), written with TDD.
+- **Built test first.** 185 backend unit tests (xUnit) and 82 frontend tests (Vitest), written with TDD, plus 11 API integration tests that run against a real SQL Server in Docker.
+- **One command to run it all.** Docker Compose starts SQL Server, applies the migrations, and serves the API and the web app; GitHub Actions runs every test on each push.
 - **Modern Angular.** Standalone components, signals, `rxResource`, `linkedSignal`, typed reactive forms and lazy-loaded routes.
 - **Argentinian context.** Health insurances (*obras sociales*) with member numbers, DNI normalization and the `America/Argentina/Buenos_Aires` time zone.
 
@@ -24,18 +27,49 @@ The front desk manages specialties, health insurances, doctors with weekly sched
 | API | ASP.NET Core 10 (Minimal APIs), JWT bearer authentication, OpenAPI + [Scalar](https://scalar.com) |
 | Persistence | Entity Framework Core 10, SQL Server |
 | Frontend | Angular 22, TypeScript, plain CSS with design tokens and dark mode |
-| Tests | xUnit + `FakeTimeProvider` (backend), Vitest + Angular TestBed (frontend) |
+| Tests | xUnit + `FakeTimeProvider` (backend), `WebApplicationFactory` + Testcontainers (integration), Vitest + Angular TestBed (frontend) |
+| Delivery | Docker multi-stage images, nginx, Docker Compose, GitHub Actions |
 
 ## Getting started
 
-### Prerequisites
+### Quick start with Docker
+
+The only requirement is [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+
+1. **Create the secrets file.** Copy `.env.example` to `.env` and replace both values. `.env` is git-ignored.
+2. **Start everything** (the first build takes a few minutes):
+
+   ```bash
+   docker compose up --build -d
+   ```
+
+3. **Create the first receptionist.** The database starts empty:
+
+   ```bash
+   docker compose run --rm api create-receptionist <email> <password>
+   ```
+
+4. Open **http://localhost:8080**.
+
+| Container | Role |
+|-----------|------|
+| `db` | SQL Server 2022. Its data lives in the `sqldata` volume, so it survives restarts. Reachable from this machine on `localhost,14330`. |
+| `migrate` | Runs `migrate` once to create or upgrade the schema, then exits. The API waits for it to succeed. |
+| `api` | The ASP.NET Core API, not published to the host. |
+| `web` | nginx serving the Angular build and forwarding `/api` to the API, so the browser sees a single origin and needs no CORS. |
+
+`docker compose down` stops everything and keeps the data; `docker compose down -v` also deletes the database.
+
+### Local development
+
+#### Prerequisites
 
 - [.NET SDK 10](https://dotnet.microsoft.com/download)
 - SQL Server (LocalDB, Express or Developer edition)
 - [Node.js](https://nodejs.org) 24 or later and the Angular CLI: `npm install -g @angular/cli`
 - EF Core tools: `dotnet tool install --global dotnet-ef`
 
-### Run it
+#### Run it
 
 1. **Create the database.** The connection string lives in `backend/src/ClinicBooking.Api/appsettings.Development.json` and points to `localhost` with Windows authentication. Adjust it if your SQL Server instance is different, then apply the migrations:
 
@@ -81,6 +115,8 @@ The front desk manages specialties, health insurances, doctors with weekly sched
 dotnet test backend/ClinicBooking.slnx
 ```
 
+The integration tests start a throwaway SQL Server container with [Testcontainers](https://dotnet.testcontainers.org), so Docker must be running. They host the real API in memory and cover sign-in, roles, doctor isolation, `409` on a taken slot, and 20 simultaneous bookings for the same slot (exactly one wins).
+
 ```bash
 cd frontend
 ng test --watch=false
@@ -99,13 +135,16 @@ The index is **filtered** on purpose. A plain unique index would also block slot
 
 **Measured result:** 25 synchronized requests for each of 4 slots (100 in total) produced exactly 4 bookings, 96 conflicts and no `500`. In 52 of those conflicts the requests had already passed the application check, and only the database index stopped them.
 
+**Kept honest by tests:** an integration test fires 20 bookings for the same slot at once, and another writes a duplicate straight through the repository, skipping the application check. Disabling the translation of the index violation makes exactly those two tests fail.
+
 ## Security
 
 | Concern | How it is handled |
 |---------|-------------------|
 | Passwords | Hashed with ASP.NET Core Identity's PBKDF2 hasher (random salt, many iterations), behind our own interface. At least 10 characters, no symbol rules. |
 | Sign-in errors | "Invalid email or password" for both an unknown email and a wrong password, so accounts can't be discovered. |
-| Tokens | JWT signed with HMAC-SHA256, valid for 1 hour. The signing key lives in User Secrets, never in the repository, and the API refuses to start without it. Only `HS256` is accepted. |
+| Tokens | JWT signed with HMAC-SHA256, valid for 1 hour. The signing key lives in User Secrets (or the git-ignored `.env` with Docker), never in the repository, and the API refuses to start without it. Only `HS256` is accepted. |
+| Containers | Both images run as non-root users and contain no SDK or compiler. Only the web container is published; the API sits behind nginx. |
 | Authorization | Policies per role on every endpoint, plus a fallback policy: an endpoint someone forgets to protect still requires a signed-in user. |
 | Doctors' data | A doctor's id comes from the signed token. Asking for another doctor's agenda returns your own; another doctor's appointment answers `404`, so ids can't be probed. |
 | Frontend | Route guards and a role-aware menu shape the experience; the API remains the real protection. The token is attached only to calls to our own API, and a `401` signs the user out. |
@@ -165,6 +204,8 @@ The frontend is organized by feature (`appointments`, `doctors`, `patients`, `sp
 | `400` vs `409` | A time that is not a slot is an invalid request; a slot that is already taken is a conflict. The frontend reacts differently to each. |
 | Hand-written fakes instead of mocks | Tests check outcomes, not which methods were called, so refactoring the services doesn't break them. |
 | Clinic time shown from the API string | The frontend never converts instants with `Date` for display, so times look the same from any time zone. |
+| Integration tests on a real SQL Server | The filtered index and its error translation can't be proven with fakes or an in-memory provider. |
+| Migrations as a separate one-off step | Running them at API startup would make several instances race to migrate; a dedicated `migrate` command runs once before the API. |
 
 ## API
 
@@ -200,7 +241,11 @@ Errors use the [Problem Details](https://www.rfc-editor.org/rfc/rfc9457) format,
 
 ```text
 .
+├── .github/workflows/ci.yml               # Tests and image builds on every push
+├── docker-compose.yml                     # db, migrate, api and web
+├── .env.example                           # Template for the git-ignored .env
 ├── backend/
+│   ├── Dockerfile
 │   ├── ClinicBooking.slnx
 │   ├── src/
 │   │   ├── ClinicBooking.Domain/          # Entities and business rules
@@ -209,8 +254,11 @@ Errors use the [Problem Details](https://www.rfc-editor.org/rfc/rfc9457) format,
 │   │   └── ClinicBooking.Api/             # Endpoints, error handling, composition root
 │   └── tests/
 │       ├── ClinicBooking.Domain.Tests/
-│       └── ClinicBooking.Application.Tests/
+│       ├── ClinicBooking.Application.Tests/
+│       └── ClinicBooking.Api.IntegrationTests/  # Real API + SQL Server in Docker
 ├── frontend/
+│   ├── Dockerfile
+│   ├── nginx.conf                         # Serves the app and proxies /api
 │   └── src/app/
 │       ├── core/auth/                     # Session, interceptor and route guards
 │       ├── features/                      # appointments, auth, doctors, patients, specialties, health-insurances, users
@@ -231,8 +279,8 @@ Errors use the [Problem Details](https://www.rfc-editor.org/rfc/rfc9457) format,
 ## Roadmap
 
 - [x] Authentication and roles (JWT): front desk and doctors see different things
+- [x] API integration tests against a real SQL Server (Testcontainers)
+- [x] Docker Compose setup to run everything with one command
+- [x] CI pipeline with GitHub Actions
 - [ ] Refresh tokens, so sessions can outlive the one-hour access token
 - [ ] A patient portal to book appointments online
-- [ ] API integration tests against a real SQL Server (Testcontainers)
-- [ ] Docker Compose setup to run everything with one command
-- [ ] CI pipeline with GitHub Actions
